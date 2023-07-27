@@ -1,14 +1,14 @@
-import { Api, Argument, Get, Post, Event } from '@really-less/main';
+import { Api, ApiField, Get, Post, ApiEvent } from '@really-less/main';
 
 class Request {
-  @Argument({
+  @ApiField({
     field: 'name',
     required: false,
     source: 'body',
   })
   name: string;
 
-  @Argument({
+  @ApiField({
     field: 'lastname',
     required: false,
     source: 'body',
@@ -30,7 +30,7 @@ export class GreetingApi {
   @Post({
     path: '/bye',
   })
-  sayBye(@Event(Request) e: Request) {
+  sayBye(@ApiEvent(Request) e: Request) {
     console.log('Bye');
   }
 }

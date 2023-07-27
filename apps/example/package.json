@@ -5,7 +5,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "tsc && really-less prepare"
+    "build": "tsc && really-less prepare",
+    "synth": "yarn build && yarn cdk synth -q"
   },
   "devDependencies": {
     "@really-less/cli": "*",
