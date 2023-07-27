@@ -1,12 +1,9 @@
 import { NestedStack } from 'aws-cdk-lib';
 import { RestApi } from 'aws-cdk-lib/aws-apigateway';
-import {
-  ApiMetadata,
-  ResourceType,
-  ApiReflectKeys,
-} from '../../decorators/api/api.decorators';
+import { ApiResourceMetadata } from '../../decorators/api/api';
 import { AppResources } from '../app.base';
 import { ApiProps, ApiResource } from './resources/api';
+import { ResourceReflectKeys, ResourceType } from '../../decorators/resource/resource';
 
 interface StackConfig {
   apiGateway?: ApiProps;
@@ -32,8 +29,8 @@ export class AppNestedStack extends NestedStack {
     this.api = apiGateway?.name ? undefined : api;
 
     for (const resource of resources) {
-      const resourceMetadata: ApiMetadata = Reflect.getMetadata(
-        ApiReflectKeys.RESOURCE,
+      const resourceMetadata: ApiResourceMetadata = Reflect.getMetadata(
+        ResourceReflectKeys.RESOURCE,
         resource
       );
 

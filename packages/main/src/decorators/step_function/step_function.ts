@@ -1,23 +1,13 @@
-import { REALLY_LESS_BUILD } from 'constants/env.constants';
+import { LambdaMetadata, createLambdaDecorator } from '../lambda/lambda';
 import {
-  LambdaMetadata,
-  createLambdaDecorator,
-} from 'decorators/lambda/lambda.decorators';
+  ResourceType,
+  ResourceProps,
+  createResourceDecorator,
+} from '../resource/resource';
 import 'reflect-metadata';
-import { getCallerFileName } from 'utils/path';
-
-enum StepFunctionReflectKeys {
-  RESOURCE = 'step_function:resource',
-  TASK = 'step_function:task',
-}
 
 interface StepFunctionProps<T extends Function> {
-  name?: string;
   startAt: keyof T['prototype'];
-}
-
-interface StepFunctionReflectProps<T extends Function> extends StepFunctionProps<T> {
-  filename: string;
 }
 
 interface WaitTask<M> {
@@ -161,27 +151,17 @@ interface TaskProps<M> {
 }
 
 interface LambdaTaskMetadata<T> extends TaskProps<keyof T>, LambdaMetadata {}
+interface StepFunctionResourceProps<T extends Function>
+  extends ResourceProps,
+    StepFunctionProps<T> {}
 
 export const StepFunction =
-  <T extends Function>(props: StepFunctionProps<T>) =>
-  (constructor: T) => {
-    if (!process.env[REALLY_LESS_BUILD]) {
-      return;
-    }
-
-    const { name = constructor.name, ...rest } = props;
-
-    const filename = getCallerFileName();
-    Reflect.defineMetadata(
-      StepFunctionReflectKeys.RESOURCE,
-      {
-        name,
-        filename,
-        ...rest,
-      },
-      constructor
-    );
-  };
+  <T extends Function>(props: StepFunctionResourceProps<T>) =>
+  (constructor: T) =>
+    createResourceDecorator<StepFunctionResourceProps<T>>(
+      ResourceType.STEP_FUNCTION,
+      (props) => props
+    )(props)(constructor);
 
 export const Task =
   <T>(props: LambdaTaskMetadata<T>) =>

@@ -11,14 +11,15 @@ import {
   IResource,
 } from 'aws-cdk-lib/aws-apigateway';
 
-import { ApiMetadata, ApiLambdaMetadata } from '../../../decorators';
-import { Resource } from '../stack';
 import {
-  MetadataArguments,
-  Source,
-} from '../../../decorators/argument/argument.decorators';
+  ApiResourceMetadata,
+  ApiLambdaMetadata,
+  ApiFieldSource,
+  ApiFieldMetadata,
+} from '../../../decorators';
+import { Resource } from '../stack';
 import { CommonResource } from './common';
-import { LambdaReflectKeys } from 'decorators/lambda/lambda.decorators';
+import { LambdaReflectKeys } from 'decorators/lambda/lambda';
 
 export interface ApiProps {
   name?: string;
@@ -29,7 +30,7 @@ interface ApiResourceProps {
   scope: NestedStack;
   resource: Resource;
   stackName: string;
-  apiMetadata: ApiMetadata;
+  apiMetadata: ApiResourceMetadata;
   apiProps?: ApiProps;
   api?: RestApi;
 }
@@ -40,7 +41,7 @@ const schemaTypeMap: Record<string, JsonSchemaType> = {
   Boolean: JsonSchemaType.BOOLEAN,
 };
 
-const requestTemplateMap: Record<Source, (key: string) => string> = {
+const requestTemplateMap: Record<ApiFieldSource, (key: string) => string> = {
   body: (key) => `$input.json('$.${key}')`,
   path: (key) => `$input.path('${key}')`,
   query: (key) => `$input.params('${key}')`,
@@ -50,7 +51,7 @@ const requestTemplateMap: Record<Source, (key: string) => string> = {
 export class ApiResource extends CommonResource {
   private apiProps?: ApiProps;
   private api: RestApi;
-  private apiMetadata: ApiMetadata;
+  private apiMetadata: ApiResourceMetadata;
   private resource: Resource;
   private apiResources: Record<string, IResource> = {};
 
@@ -79,8 +80,8 @@ export class ApiResource extends CommonResource {
 
       const { bodySchema, requestTemplate, requestParameters, requestValidations } =
         this.parseRequestArguments(handler);
-      const resource = this.generateResource(handler);
-      resource.addMethod(
+      const apiResource = this.generateApiResource(handler);
+      apiResource.addMethod(
         handler.method,
         new LambdaIntegration(lambda, {
           requestTemplates: requestTemplate
@@ -131,7 +132,7 @@ export class ApiResource extends CommonResource {
   }
 
   private parseRequestArguments(handler: ApiLambdaMetadata) {
-    const args: Record<string, MetadataArguments[]> =
+    const args: Record<string, ApiFieldMetadata[]> =
       Reflect.getMetadata(LambdaReflectKeys.ARGUMENTS, this.resource.prototype) || {};
 
     const argsByMethod = args[handler.name];
@@ -140,7 +141,7 @@ export class ApiResource extends CommonResource {
       return {};
     }
 
-    const argsBySources: Partial<Record<Source, MetadataArguments[]>> = {};
+    const argsBySources: Partial<Record<ApiFieldSource, ApiFieldMetadata[]>> = {};
 
     for (const arg of argsByMethod) {
       argsBySources[arg.source] ??= [];
@@ -169,26 +170,26 @@ export class ApiResource extends CommonResource {
 
   private mapUrlParameters(
     type: 'querystring' | 'path',
-    parameters: MetadataArguments[] = []
+    fields: ApiFieldMetadata[] = []
   ) {
     return Object.fromEntries(
-      parameters.map((arg) => [`method.request.${type}.${arg.field}`, arg.required])
+      fields.map((field) => [`method.request.${type}.${field.field}`, field.required])
     );
   }
 
-  private getBodySchema(args: MetadataArguments[] = []): JsonSchema {
-    if (args.length === 0) {
+  private getBodySchema(fields: ApiFieldMetadata[] = []): JsonSchema {
+    if (fields.length === 0) {
       return {};
     }
 
     const properties: Record<string, JsonSchema> = {};
     const required: string[] = [];
 
-    for (const arg of args) {
-      properties[arg.field] = {
-        type: schemaTypeMap[arg.type],
+    for (const field of fields) {
+      properties[field.field] = {
+        type: schemaTypeMap[field.type],
       };
-      arg.required && required.push(arg.field);
+      field.required && required.push(field.field);
     }
 
     return {
@@ -197,7 +198,7 @@ export class ApiResource extends CommonResource {
     };
   }
 
-  private generateRequestTemplate(args: MetadataArguments[] = []) {
+  private generateRequestTemplate(args: ApiFieldMetadata[] = []) {
     const variables: string[] = [];
     const keyValues: string[] = [];
     if (args.length === 0) {
@@ -224,7 +225,7 @@ export class ApiResource extends CommonResource {
     `;
   }
 
-  private generateResource = (handler: ApiLambdaMetadata) => {
+  private generateApiResource = (handler: ApiLambdaMetadata) => {
     let fullPath = `${this.cleanPath(this.apiMetadata.path)}/${this.cleanPath(
       handler.path
     )}`;
@@ -248,8 +249,6 @@ export class ApiResource extends CommonResource {
         principalApiResource = this.apiResources[path];
         continue;
       }
-
-      console.log(path);
 
       this.apiResources[path] = principalApiResource.addResource(resourceUrl);
     }

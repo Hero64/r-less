@@ -3,15 +3,21 @@ import {
   Api,
   Get,
   Post,
-  ApiReflectKeys,
-  ResourceMetadata,
-  HandlerMetadata,
-  Event,
-} from './api.decorators';
-import { Argument } from '../argument/argument.decorators';
+  ApiField,
+  ApiEvent,
+  ApiResourceMetadata,
+  ApiLambdaMetadata,
+} from './api';
+import { ResourceReflectKeys } from '../resource/resource';
+import { LambdaReflectKeys } from '../lambda/lambda';
+import {
+  REALLY_LESS_CONTEXT,
+  REALLY_LESS_CONTEXT_VALUE,
+} from '../../constants/env.constants';
 
+process.env[REALLY_LESS_CONTEXT] = REALLY_LESS_CONTEXT_VALUE;
 class ExampleArgument {
-  @Argument({
+  @ApiField({
     required: true,
     source: 'path',
   })
@@ -27,14 +33,15 @@ class ExampleApi {
   postLambda() {}
 
   @Get()
-  getLambdaWithEvent(@Event(ExampleArgument) e: ExampleArgument) {}
+  getLambdaWithEvent(@ApiEvent(ExampleArgument) e: ExampleArgument) {}
 }
 
 describe('API Decorator', () => {
-  let resource: ResourceMetadata;
+  let resource: ApiResourceMetadata;
 
   beforeAll(() => {
-    resource = Reflect.getMetadata(ApiReflectKeys.RESOURCE, ExampleApi);
+    resource = Reflect.getMetadata(ResourceReflectKeys.RESOURCE, ExampleApi);
+    console.log(ResourceReflectKeys.RESOURCE);
   });
 
   it('Should exist api resource', () => {
@@ -47,10 +54,10 @@ describe('API Decorator', () => {
 });
 
 describe('METHOD decorator', () => {
-  let handlers: HandlerMetadata[];
+  let handlers: ApiLambdaMetadata[];
 
   beforeAll(() => {
-    handlers = Reflect.getMetadata(ApiReflectKeys.HANDLERS, ExampleApi.prototype);
+    handlers = Reflect.getMetadata(LambdaReflectKeys.HANDLERS, ExampleApi.prototype);
   });
 
   it('Should exist api handlers', () => {
@@ -75,7 +82,7 @@ describe('METHOD decorator', () => {
 describe('EVENT decorator', () => {
   it('Should exits event parameter', () => {
     const handlerProperties = Reflect.getMetadata(
-      ApiReflectKeys.PROPERTIES,
+      LambdaReflectKeys.ARGUMENTS,
       ExampleApi.prototype
     );
 
@@ -85,7 +92,7 @@ describe('EVENT decorator', () => {
 
   it('Should get argument class', () => {
     const argumentClass = Reflect.getMetadata(
-      ApiReflectKeys.ARGUMENTS,
+      LambdaReflectKeys.ARGUMENTS,
       ExampleApi.prototype
     );
 

@@ -14,7 +14,6 @@ export interface LambdaMetadata {
 export enum LambdaReflectKeys {
   HANDLERS = 'lambda:handlers',
   ARGUMENTS = 'lambda:arguments',
-  EVENT_ARGUMENTS = 'lambda:event_arguments',
 }
 
 export enum LambdaArgumentTypes {
@@ -46,19 +45,14 @@ const reflectArgumentMethod = (
 
 export const createLambdaDecorator =
   <T, M>(getLambdaMetadata: (params: T, methodName: string) => M) =>
-  (props: T) =>
+  (props?: T) =>
   (target: any, methodName: string, descriptor: PropertyDescriptor) => {
     const handlersMetadata: M[] =
       Reflect.getMetadata(LambdaReflectKeys.HANDLERS, target) || [];
 
     Reflect.defineMetadata(
       LambdaReflectKeys.HANDLERS,
-      [
-        ...handlersMetadata,
-        {
-          ...getLambdaMetadata(props, methodName),
-        },
-      ],
+      [...handlersMetadata, getLambdaMetadata(props || ({} as T), methodName)],
       target
     );
 
