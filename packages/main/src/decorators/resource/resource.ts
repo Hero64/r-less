@@ -29,6 +29,7 @@ export const createResourceDecorator =
     if (!process.env[REALLY_LESS_CONTEXT]) {
       return;
     }
+
     const additionalMetadata = getMetadata(props || ({} as T));
 
     const callerFile = getCallerFileName();

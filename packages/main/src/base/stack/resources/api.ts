@@ -16,10 +16,10 @@ import {
   ApiLambdaMetadata,
   ApiFieldSource,
   ApiFieldMetadata,
+  LambdaReflectKeys,
 } from '../../../decorators';
 import { Resource } from '../stack';
 import { CommonResource } from './common';
-import { LambdaReflectKeys } from 'decorators/lambda/lambda';
 
 export interface ApiProps {
   name?: string;
@@ -132,10 +132,10 @@ export class ApiResource extends CommonResource {
   }
 
   private parseRequestArguments(handler: ApiLambdaMetadata) {
-    const args: Record<string, ApiFieldMetadata[]> =
-      Reflect.getMetadata(LambdaReflectKeys.ARGUMENTS, this.resource.prototype) || {};
+    const fields: Record<string, ApiFieldMetadata[]> =
+      Reflect.getMetadata(LambdaReflectKeys.EVENT_FIELDS, this.resource.prototype) || {};
 
-    const argsByMethod = args[handler.name];
+    const argsByMethod = fields[handler.name];
 
     if (!argsByMethod) {
       return {};
@@ -198,20 +198,20 @@ export class ApiResource extends CommonResource {
     };
   }
 
-  private generateRequestTemplate(args: ApiFieldMetadata[] = []) {
+  private generateRequestTemplate(fields: ApiFieldMetadata[] = []) {
     const variables: string[] = [];
     const keyValues: string[] = [];
-    if (args.length === 0) {
+    if (fields.length === 0) {
       return;
     }
 
-    for (const arg of args) {
+    for (const field of fields) {
       variables.push(
-        `#set($${arg.field} = ${requestTemplateMap[arg.source](arg.field)})`
+        `#set($${field.field} = ${requestTemplateMap[field.source](field.field)})`
       );
-      let jsonField = `"${arg.destinationField}": $${arg.field},`;
-      if (!arg.required) {
-        jsonField = `#if($${arg.field}) ${jsonField} #end`;
+      let jsonField = `"${field.destinationField}": $${field.field},`;
+      if (!field.required) {
+        jsonField = `#if($${field.field}) ${jsonField} #end`;
       }
       keyValues.push(jsonField);
     }

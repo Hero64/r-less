@@ -41,7 +41,6 @@ describe('API Decorator', () => {
 
   beforeAll(() => {
     resource = Reflect.getMetadata(ResourceReflectKeys.RESOURCE, ExampleApi);
-    console.log(ResourceReflectKeys.RESOURCE);
   });
 
   it('Should exist api resource', () => {

@@ -14,6 +14,7 @@ export interface LambdaMetadata {
 export enum LambdaReflectKeys {
   HANDLERS = 'lambda:handlers',
   ARGUMENTS = 'lambda:arguments',
+  EVENT_FIELDS = 'lambda:event_fields',
 }
 
 export enum LambdaArgumentTypes {
@@ -82,10 +83,11 @@ export const createEventDecorator =
   (FieldClass: E) =>
   (target: any, methodName: string, _number: number) => {
     const eventFields = getEventFields(FieldClass);
+
     let argumentsByMethod =
-      Reflect.getMetadata(LambdaReflectKeys.ARGUMENTS, target) || {};
+      Reflect.getMetadata(LambdaReflectKeys.EVENT_FIELDS, target) || {};
     Reflect.defineMetadata(
-      LambdaReflectKeys.ARGUMENTS,
+      LambdaReflectKeys.EVENT_FIELDS,
       {
         ...argumentsByMethod,
         ...(eventFields ? { [methodName]: eventFields } : {}),

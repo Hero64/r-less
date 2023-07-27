@@ -1,2 +1,4 @@
 export * from './api/api';
-export * from './argument/argument.decorators';
+export * from './lambda/lambda';
+export * from './resource/resource';
+export * from './step_function/step_function';

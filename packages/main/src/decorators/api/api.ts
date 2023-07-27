@@ -79,7 +79,6 @@ export const Patch = createMethodDecorator(Method.PATCH);
 export const Delete = createMethodDecorator(Method.DELETE);
 
 export const ApiEvent = createEventDecorator((FieldClass) => {
-  console.log(Reflect.getMetadata(ApiReflectKeys.FIELD, FieldClass.prototype));
   return Reflect.getMetadata(ApiReflectKeys.FIELD, FieldClass.prototype);
 });
 
