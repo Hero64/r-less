@@ -1,0 +1,1 @@
+export const REALLY_LESS_BUILD = 'REALLY_LESS_BUILD';
