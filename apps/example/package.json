@@ -1,0 +1,19 @@
+{
+  "name": "@really-less/example",
+  "private": true,
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc && really-less prepare"
+  },
+  "devDependencies": {
+    "@really-less/cli": "*",
+    "@really-less/main": "*",
+    "aws-cdk": "2.85.0",
+    "cdk": "2.85.0"
+  },
+  "dependencies": {
+    "dayjs": "1.11.8"
+  }
+}
