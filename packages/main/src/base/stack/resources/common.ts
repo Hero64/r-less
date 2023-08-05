@@ -10,10 +10,18 @@ export const NodeRuntime = {
 export class CommonResource {
   constructor(protected scope: NestedStack, protected stackName: string) {}
 
-  protected createLambda(pathName: string, filename: string, handler: LambdaMetadata) {
-    return new LambdaFunction(this.scope, handler.name, {
+  protected createLambda(
+    pathName: string,
+    filename: string,
+    handler: LambdaMetadata,
+    prefix: string = '',
+    excludeFiles: string[] = []
+  ) {
+    return new LambdaFunction(this.scope, `${prefix}-${handler.name}`, {
       runtime: NodeRuntime[handler.lambda?.runtime || 18],
-      code: Code.fromAsset(pathName),
+      code: Code.fromAsset(pathName, {
+        exclude: ['*.stack.js', ...excludeFiles.map((file) => `*.${file}.js`)],
+      }),
       handler: `${filename}.${handler.name}`,
       timeout: handler.lambda?.timeout
         ? Duration.seconds(handler.lambda.timeout)

@@ -3,7 +3,13 @@ import { RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { ApiResourceMetadata } from '../../decorators/api/api';
 import { AppResources } from '../app.base';
 import { ApiProps, ApiResource } from './resources/api';
-import { ResourceReflectKeys, ResourceType } from '../../decorators/resource/resource';
+import {
+  ResourceMetadata,
+  ResourceReflectKeys,
+  ResourceType,
+} from '../../decorators/resource/resource';
+import { StepFunctionResource } from './resources/step_function';
+import { StepFunctionResourceMetadata } from '../../decorators/step_function/step_function';
 
 interface StackConfig {
   apiGateway?: ApiProps;
@@ -29,7 +35,7 @@ export class AppNestedStack extends NestedStack {
     this.api = apiGateway?.name ? undefined : api;
 
     for (const resource of resources) {
-      const resourceMetadata: ApiResourceMetadata = Reflect.getMetadata(
+      const resourceMetadata: ResourceMetadata = Reflect.getMetadata(
         ResourceReflectKeys.RESOURCE,
         resource
       );
@@ -42,10 +48,21 @@ export class AppNestedStack extends NestedStack {
             stackName: name,
             api: this.api,
             apiProps: apiGateway,
-            apiMetadata: resourceMetadata,
+            apiMetadata: resourceMetadata as ApiResourceMetadata,
           });
 
           this.api = apiResource.generate();
+          break;
+        }
+        case ResourceType.STEP_FUNCTION: {
+          const stepFunctionResource = new StepFunctionResource({
+            resource,
+            scope: this,
+            stackName: name,
+            metadata: resourceMetadata as StepFunctionResourceMetadata,
+          });
+
+          stepFunctionResource.generate();
         }
       }
     }

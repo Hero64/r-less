@@ -1,8 +1,9 @@
-import { LambdaMetadata, createLambdaDecorator } from '../lambda/lambda';
+import { LambdaMetadata, LambdaProps, createLambdaDecorator } from '../lambda/lambda';
 import {
   ResourceType,
   ResourceProps,
   createResourceDecorator,
+  ResourceMetadata,
 } from '../resource/resource';
 import 'reflect-metadata';
 
@@ -16,78 +17,101 @@ interface WaitTask<M> {
   next: TaskTypes<M>;
 }
 
-interface Validate {
-  mode:
-    | 'BooleanEquals'
-    | 'BooleanEqualsPath'
-    | 'IsBoolean'
-    | 'IsNull'
-    | 'IsNumeric'
-    | 'IsPresent'
-    | 'IsString'
-    | 'IsTimestamp'
-    | 'NumericEquals'
-    | 'NumericEqualsPath'
-    | 'NumericGreaterThan'
-    | 'NumericGreaterThanPath'
-    | 'NumericGreaterThanEquals'
-    | 'NumericGreaterThanEqualsPath'
-    | 'NumericLessThan'
-    | 'NumericLessThanPath'
-    | 'NumericLessThanEquals'
-    | 'NumericLessThanEqualsPath'
-    | 'StringEquals'
-    | 'StringEqualsPath'
-    | 'StringGreaterThan'
-    | 'StringGreaterThanPath'
-    | 'StringGreaterThanEquals'
-    | 'StringGreaterThanEqualsPath'
-    | 'StringLessThan'
-    | 'StringLessThanPath'
-    | 'StringLessThanEquals'
-    | 'StringLessThanEqualsPath'
-    | 'StringMatches'
-    | 'TimestampEquals'
-    | 'TimestampEqualsPath'
-    | 'TimestampGreaterThan'
-    | 'TimestampGreaterThanPath'
-    | 'TimestampGreaterThanEquals'
-    | 'TimestampGreaterThanEqualsPath'
-    | 'TimestampLessThan'
-    | 'TimestampLessThanPath'
-    | 'TimestampLessThanEquals'
-    | 'TimestampLessThanEqualsPath';
+interface ValidateByType<T, V = never> {
+  mode: T;
+  value: V;
   variable: string;
 }
 
-interface ValidateNot {
-  mode: 'Not';
-  condition: Validate;
+type ValidateBoolean = ValidateByType<'booleanEquals', boolean>;
+type ValidateString = ValidateByType<
+  | 'booleanEqualsJsonPath'
+  | 'stringEqualsJsonPath'
+  | 'stringEquals'
+  | 'stringLessThan'
+  | 'stringLessThanJsonPath'
+  | 'stringLessThanEquals'
+  | 'stringLessThanEqualsJsonPath'
+  | 'stringGreaterThan'
+  | 'stringGreaterThanJsonPath'
+  | 'stringGreaterThanEqualsJsonPath'
+  | 'stringGreaterThanEquals'
+  | 'numberEqualsJsonPath'
+  | 'numberLessThanJsonPath'
+  | 'numberLessThanEqualsJsonPath'
+  | 'numberGreaterThanJsonPath'
+  | 'numberGreaterThanEqualsJsonPath'
+  | 'timestampEquals'
+  | 'timestampEqualsJsonPath'
+  | 'timestampLessThan'
+  | 'timestampLessThanJsonPath'
+  | 'timestampLessThanEquals'
+  | 'timestampLessThanEqualsJsonPath'
+  | 'timestampGreaterThan'
+  | 'timestampGreaterThanJsonPath'
+  | 'timestampGreaterThanEquals'
+  | 'timestampGreaterThanEqualsJsonPath'
+  | 'stringMatches',
+  string
+>;
+
+type ValidateNumber = ValidateByType<
+  | 'numberEquals'
+  | 'numberLessThan'
+  | 'numberLessThanEquals'
+  | 'numberGreaterThan'
+  | 'numberGreaterThanEquals',
+  number
+>;
+
+type ValidateIs = ValidateByType<
+  | 'isPresent'
+  | 'isNotPresent'
+  | 'isString'
+  | 'isNotString'
+  | 'isNumeric'
+  | 'isNotNumeric'
+  | 'isBoolean'
+  | 'isNotBoolean'
+  | 'isTimestamp'
+  | 'isNotTimestamp'
+  | 'isNotNull'
+  | 'isNull'
+>;
+
+export type ValidateValues =
+  | ValidateBoolean
+  | ValidateString
+  | ValidateNumber
+  | ValidateIs;
+
+export interface ValidateNot {
+  mode: 'not';
+  condition: ValidateValues;
 }
 
-interface ValidateMultiple {
-  mode: 'And' | 'Or';
-  conditions: Validate[] | ValidateNot[] | ValidateMultiple[];
+export type ValidateMultipleTypes = 'and' | 'or';
+
+export interface ValidateMultiple {
+  mode: ValidateMultipleTypes;
+  conditions: Validations[];
 }
 
-interface ChoiceCondition<M> {
-  validate: Validate | ValidateMultiple;
+export type Validations = ValidateValues | ValidateMultiple | ValidateNot;
+
+type ChoiceCondition<M> = Validations & {
   next: TaskTypes<M>;
-}
+};
 
-interface ChoiceTask<M> {
+export interface ChoiceTask<M> {
   type: 'choice';
   choices: ChoiceCondition<M>[];
   default?: TaskTypes<M>;
 }
 
-interface ParallelBranches<M> {
-  task: M;
-}
-
 interface ParallelTask<M> {
   type: 'parallel';
-  branches: ParallelBranches<M>[];
+  branches: TaskTypes<M>[];
   end?: boolean;
   next?: TaskTypes<M>;
 }
@@ -108,15 +132,11 @@ interface PassTask<M> {
   end?: boolean;
 }
 
-interface MapIterator<M> {
-  task: M;
-}
-
 interface MapTask<M> {
   type: 'map';
   itemsPath: string;
   params: Record<string, string>;
-  iterator: MapIterator<M>;
+  iterator: TaskTypes<M>;
   next?: TaskTypes<M>;
   maxCurrency?: number;
 }
@@ -133,7 +153,7 @@ interface TaskCatch<M> {
   next?: M | PassTask<M> | SucceedTask | FailTask;
 }
 
-type TaskTypes<M> =
+export type TaskTypes<M> =
   | M
   | WaitTask<M>
   | ChoiceTask<M>
@@ -150,10 +170,17 @@ interface TaskProps<M> {
   next?: TaskTypes<M>;
 }
 
-interface LambdaTaskMetadata<T> extends TaskProps<keyof T>, LambdaMetadata {}
-interface StepFunctionResourceProps<T extends Function>
+export interface LambdaTaskMetadata<T = {}> extends TaskProps<keyof T>, LambdaMetadata {}
+
+interface LambdaTaskProps<T = {}> extends TaskProps<keyof T>, Partial<LambdaProps> {}
+
+export interface StepFunctionResourceProps<T extends Function>
   extends ResourceProps,
     StepFunctionProps<T> {}
+
+export interface StepFunctionResourceMetadata extends ResourceMetadata {
+  startAt: string;
+}
 
 export const StepFunction =
   <T extends Function>(props: StepFunctionResourceProps<T>) =>
@@ -164,9 +191,9 @@ export const StepFunction =
     )(props)(constructor);
 
 export const Task =
-  <T>(props: LambdaTaskMetadata<T>) =>
+  <T>(props?: LambdaTaskProps<T>) =>
   (target: T, methodName: string, descriptor: PropertyDescriptor) =>
-    createLambdaDecorator<LambdaTaskMetadata<T>, LambdaTaskMetadata<T>>((props) => ({
+    createLambdaDecorator<LambdaTaskProps<T>, LambdaTaskMetadata<T>>((props) => ({
       ...props,
       name: methodName,
     }))(props)(target, methodName, descriptor);

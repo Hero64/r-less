@@ -75,7 +75,9 @@ export class ApiResource extends CommonResource {
       const lambda = this.createLambda(
         this.apiMetadata.foldername,
         this.apiMetadata.filename,
-        handler
+        handler,
+        'api-handler',
+        ['stepfunction']
       );
 
       const { bodySchema, requestTemplate, requestParameters, requestValidations } =
