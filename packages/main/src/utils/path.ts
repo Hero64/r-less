@@ -11,8 +11,7 @@ const getStacks = () => {
   return stacks;
 };
 
-export const getCallerFileName = (): string => {
+export const getCallerFileName = (fileIndex: number = 5): string => {
   const stacks = getStacks();
-
-  return stacks[5].getFileName();
+  return stacks[fileIndex].getFileName();
 };

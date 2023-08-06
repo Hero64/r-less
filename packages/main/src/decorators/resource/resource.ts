@@ -23,7 +23,11 @@ export interface ResourceMetadata extends Required<ResourceProps> {
 }
 
 export const createResourceDecorator =
-  <T extends ResourceProps>(type: ResourceType, getMetadata: (props: T) => T) =>
+  <T extends ResourceProps>(
+    type: ResourceType,
+    getMetadata: (props: T) => T,
+    callerFileIndex?: number
+  ) =>
   (props?: T) =>
   (constructor: Function) => {
     if (!process.env[REALLY_LESS_CONTEXT]) {
@@ -32,7 +36,7 @@ export const createResourceDecorator =
 
     const additionalMetadata = getMetadata(props || ({} as T));
 
-    const callerFile = getCallerFileName();
+    const callerFile = getCallerFileName(callerFileIndex);
     Reflect.defineMetadata(
       ResourceReflectKeys.RESOURCE,
       {

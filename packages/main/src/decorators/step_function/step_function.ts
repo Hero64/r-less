@@ -187,7 +187,8 @@ export const StepFunction =
   (constructor: T) =>
     createResourceDecorator<StepFunctionResourceProps<T>>(
       ResourceType.STEP_FUNCTION,
-      (props) => props
+      (props) => props,
+      6
     )(props)(constructor);
 
 export const Task =

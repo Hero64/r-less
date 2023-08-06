@@ -68,9 +68,13 @@ const createMethodDecorator = (method: Method) =>
     };
   });
 
-export const Api = createResourceDecorator<ApiProps>(ResourceType.API, ({ path }) => ({
-  path: path || '/',
-}));
+export const Api = createResourceDecorator<ApiProps>(
+  ResourceType.API,
+  ({ path }) => ({
+    path: path || '/',
+  }),
+  5
+);
 
 export const Get = createMethodDecorator(Method.GET);
 export const Post = createMethodDecorator(Method.POST);
