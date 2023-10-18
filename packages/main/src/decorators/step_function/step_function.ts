@@ -185,11 +185,10 @@ export interface StepFunctionResourceMetadata extends ResourceMetadata {
 export const StepFunction =
   <T extends Function>(props: StepFunctionResourceProps<T>) =>
   (constructor: T) =>
-    createResourceDecorator<StepFunctionResourceProps<T>>(
-      ResourceType.STEP_FUNCTION,
-      (props) => props,
-      6
-    )(props)(constructor);
+    createResourceDecorator<StepFunctionResourceProps<T>>({
+      type: ResourceType.STEP_FUNCTION,
+      callerFileIndex: 6,
+    })(props)(constructor);
 
 export const Task =
   <T>(props?: LambdaTaskProps<T>) =>

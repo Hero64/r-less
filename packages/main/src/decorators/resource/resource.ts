@@ -6,6 +6,7 @@ import { REALLY_LESS_CONTEXT } from '../../constants/env.constants';
 export enum ResourceType {
   API,
   STEP_FUNCTION,
+  EVENT,
 }
 
 export enum ResourceReflectKeys {
@@ -22,18 +23,21 @@ export interface ResourceMetadata extends Required<ResourceProps> {
   foldername: string;
 }
 
+interface ResourceDecoratorProps<T> {
+  type: ResourceType;
+  getMetadata?: (props: T) => T;
+  callerFileIndex?: number;
+}
+
 export const createResourceDecorator =
-  <T extends ResourceProps>(
-    type: ResourceType,
-    getMetadata: (props: T) => T,
-    callerFileIndex?: number
-  ) =>
+  <T extends ResourceProps>(decoratorProps: ResourceDecoratorProps<T>) =>
   (props?: T) =>
   (constructor: Function) => {
     if (!process.env[REALLY_LESS_CONTEXT]) {
       return;
     }
 
+    const { type, callerFileIndex, getMetadata = () => props } = decoratorProps;
     const additionalMetadata = getMetadata(props || ({} as T));
 
     const callerFile = getCallerFileName(callerFileIndex);
