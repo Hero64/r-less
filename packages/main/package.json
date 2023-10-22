@@ -12,9 +12,7 @@
   "dependencies": {
     "@really-less/decorators": "*",
     "aws-cdk-lib": "2.85.0",
-    "caller-callsite": "^5.0.0",
     "constructs": "10.2.61",
-    "parent-module": "^3.0.0",
     "reflect-metadata": "0.1.13"
   },
   "devDependencies": {
