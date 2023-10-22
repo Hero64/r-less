@@ -23,8 +23,8 @@ import {
   TaskTypes,
   ValidateValues,
   Validations,
-} from '../../../decorators/step_function/step_function';
-import { LambdaReflectKeys } from '../../../decorators/lambda/lambda';
+  LambdaReflectKeys,
+} from '@really-less/decorators';
 
 interface StepFunctionResourceProps {
   scope: NestedStack;

@@ -1,15 +1,15 @@
 import { NestedStack } from 'aws-cdk-lib';
 import { RestApi } from 'aws-cdk-lib/aws-apigateway';
-import { ApiResourceMetadata } from '../../decorators/api/api';
-import { AppResources } from '../app.base';
-import { ApiProps, ApiResource } from './resources/api';
 import {
+  ApiResourceMetadata,
   ResourceMetadata,
   ResourceReflectKeys,
   ResourceType,
-} from '../../decorators/resource/resource';
+  StepFunctionResourceMetadata,
+} from '@really-less/decorators';
+import { AppResources } from '../app/app';
+import { ApiProps, ApiResource } from './resources/api';
 import { StepFunctionResource } from './resources/step_function';
-import { StepFunctionResourceMetadata } from '../../decorators/step_function/step_function';
 
 interface StackConfig {
   apiGateway?: ApiProps;

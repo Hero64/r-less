@@ -1,4 +1,4 @@
-import { StepFunction, Task } from '@really-less/main';
+import { StepFunction, Task } from '@really-less/decorators';
 
 @StepFunction({
   startAt: 'sayHello',

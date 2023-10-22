@@ -1,20 +1,5 @@
-import { Api, ApiField, Get, Post, ApiEvent } from '@really-less/main';
-
-class Request {
-  @ApiField({
-    field: 'name',
-    required: false,
-    source: 'body',
-  })
-  name: string;
-
-  @ApiField({
-    field: 'lastname',
-    required: false,
-    source: 'body',
-  })
-  lastName: string;
-}
+import { Api, Get, Post, ApiEvent } from '@really-less/decorators';
+import { GreetingField } from './greeting.field';
 
 @Api({
   path: 'greeting/{id}',
@@ -30,7 +15,7 @@ export class GreetingApi {
   @Post({
     path: '/bye',
   })
-  sayBye(@ApiEvent(Request) e: Request) {
+  sayBye(@ApiEvent(GreetingField) e: GreetingField) {
     console.log('Bye');
   }
 }

@@ -42,18 +42,3 @@ export const EventCron = createLambdaDecorator<EventCronProps, EventCronMetadata
     name: methodName,
   })
 );
-
-@Event({
-  name: '',
-})
-class A {
-  @EventRule()
-  a() {}
-
-  @EventCron({
-    schedule: {
-      hour: '*/1',
-    },
-  })
-  b() {}
-}

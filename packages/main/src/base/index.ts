@@ -1,2 +1,2 @@
-export * from './app.base';
+export * from './app/app';
 export * from './stack/stack';

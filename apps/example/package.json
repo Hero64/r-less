@@ -15,6 +15,7 @@
     "cdk": "2.85.0"
   },
   "dependencies": {
+    "@really-less/decorators": "*",
     "dayjs": "1.11.8"
   }
 }

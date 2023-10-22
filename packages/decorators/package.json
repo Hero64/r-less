@@ -1,5 +1,5 @@
 {
-  "name": "@really-less/main",
+  "name": "@really-less/decorators",
   "private": false,
   "version": "1.0.0",
   "main": "lib/index.js",
@@ -10,7 +10,6 @@
     "test": "jest"
   },
   "dependencies": {
-    "@really-less/decorators": "*",
     "aws-cdk-lib": "2.85.0",
     "caller-callsite": "^5.0.0",
     "constructs": "10.2.61",
