@@ -2,8 +2,8 @@
 import { program } from 'commander';
 import { createSpinner } from 'nanospinner';
 
-import { generateLayer } from './base/layer.base';
-import { getStackFiles } from './base/export.base';
+import { generateLayer } from './base/layer';
+import { getStackFiles } from './base/export';
 
 program
   .command('prepare')
@@ -23,5 +23,7 @@ program
       spinner.stop();
     }
   });
+
+// TODO: implements a clean
 
 program.parse();
