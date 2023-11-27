@@ -1,6 +1,8 @@
-# R-LESS
+# r-less
 
-It is a simple framework for the AWS stack created for developers. Forget about configuring YML files and start coding your resources.
+It is a simple framework for the AWS stack, created for developers. Forget about configuring YML files and start coding your resources.
+
+![R-LESS](https://i.ibb.co/LJgv0Fg/r-less.png)
 
 ## How work
 
@@ -21,7 +23,7 @@ export class ExampleApi {
   }
 }
 ```
-It's a bit more complex than that, but creating an ApiGateway that responds to a lambda is just simple as the example.
+Es un poco más complejo que eso, pero crear un ApiGateway que responda una lambda es tan simple como el ejemplo.
 
 # Roadmap
 
