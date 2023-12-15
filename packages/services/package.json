@@ -1,0 +1,25 @@
+{
+  "name": "@really-less/services",
+  "private": false,
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "tsc -w",
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "jest-dynalite": "^3.6.1",
+    "reflect-metadata": "0.1.13"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-dynamodb": "3.474.0",
+    "@aws-sdk/util-dynamodb": "3.474.0",
+    "@shelf/jest-dynamodb": "3.4.2",
+    "@types/jest": "29.5.2",
+    "jest": "29.5.0",
+    "ts-jest": "29.1.0",
+    "ts-node": "10.9.1"
+  }
+}
