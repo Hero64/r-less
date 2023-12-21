@@ -10,6 +10,7 @@ interface Address {
 
 @DynamoModel({
   name: 'users',
+  tracing: true,
 })
 class User {
   @PartitionKey

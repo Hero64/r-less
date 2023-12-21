@@ -9,6 +9,7 @@ import {
   UpdateItemCommand,
   DeleteItemCommand,
 } from '@aws-sdk/client-dynamodb';
+import { captureAWSv3Client } from 'aws-xray-sdk';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 
 import {
@@ -180,7 +181,7 @@ const getConfig = () => {
   return {};
 };
 
-export const client = new DynamoDBClient(getConfig());
+export let client = new DynamoDBClient(getConfig());
 
 export const createRepository = <E extends { new (...args: any[]): {} }>(model: E) => {
   const modelProps: ModelMetadata<E> = Reflect.getMetadata(
@@ -196,6 +197,10 @@ export const createRepository = <E extends { new (...args: any[]): {} }>(model: 
     ModelMetadataKeys.SORT_KEY,
     model['prototype']
   );
+
+  if (modelProps.tracing) {
+    client = captureAWSv3Client(client);
+  }
 
   const getIndex = (props: QueryProps<E>) => {
     const {

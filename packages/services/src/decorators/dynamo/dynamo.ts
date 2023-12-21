@@ -17,6 +17,7 @@ export interface DynamoIndex<T extends Function> {
 export interface DynamoModelProps<T extends Function> {
   name?: string;
   indexes?: DynamoIndex<T>[];
+  tracing?: boolean;
 }
 
 export const DynamoModel =
