@@ -10,12 +10,12 @@
   },
   "devDependencies": {
     "@really-less/cli": "*",
-    "@really-less/main": "*",
+    "@really-less/resolver": "*",
     "aws-cdk": "2.85.0",
     "cdk": "2.85.0"
   },
   "dependencies": {
-    "@really-less/decorators": "*",
+    "@really-less/main": "*",
     "dayjs": "1.11.8"
   }
 }

@@ -1,4 +1,4 @@
-import { Api, Get, Post, ApiEvent } from '@really-less/decorators';
+import { Api, Get, Post, ApiEvent } from '@really-less/main';
 import { GreetingField } from './greeting.field';
 
 @Api({

@@ -24,7 +24,7 @@ import {
   ValidateValues,
   Validations,
   LambdaReflectKeys,
-} from '@really-less/decorators';
+} from '../../../../../main/lib';
 
 interface StepFunctionResourceProps {
   scope: NestedStack;

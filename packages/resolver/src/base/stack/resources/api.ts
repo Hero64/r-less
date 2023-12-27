@@ -17,7 +17,7 @@ import {
   ApiFieldSource,
   ApiFieldMetadata,
   LambdaReflectKeys,
-} from '@really-less/decorators';
+} from '../../../../../main/lib';
 import { Resource } from '../stack';
 import { CommonResource } from './common';
 

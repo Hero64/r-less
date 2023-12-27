@@ -1,4 +1,4 @@
-import { createStack } from '@really-less/main';
+import { createStack } from '@really-less/resolver';
 
 import { GreetingApi } from './greeting.api';
 import { GreetingStepFunction } from './greeting.stepfunction';

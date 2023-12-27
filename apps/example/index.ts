@@ -1,4 +1,4 @@
-import { createApp } from '@really-less/main';
+import { createApp } from '@really-less/resolver';
 
 import GreetingStack from './stacks/greeting/greeting.stack';
 

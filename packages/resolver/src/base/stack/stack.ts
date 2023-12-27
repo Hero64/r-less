@@ -6,7 +6,7 @@ import {
   ResourceReflectKeys,
   ResourceType,
   StepFunctionResourceMetadata,
-} from '@really-less/decorators';
+} from '../../../../main/lib';
 import { AppResources } from '../app/app';
 import { ApiProps, ApiResource } from './resources/api';
 import { StepFunctionResource } from './resources/step_function';

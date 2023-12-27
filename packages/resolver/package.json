@@ -1,5 +1,5 @@
 {
-  "name": "@really-less/decorators",
+  "name": "@really-less/resolver",
   "private": false,
   "version": "1.0.0",
   "main": "lib/index.js",
@@ -10,6 +10,9 @@
     "test": "jest"
   },
   "dependencies": {
+    "@really-less/main": "*",
+    "aws-cdk-lib": "2.85.0",
+    "constructs": "10.2.61",
     "reflect-metadata": "0.1.13"
   },
   "devDependencies": {

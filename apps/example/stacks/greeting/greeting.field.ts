@@ -1,4 +1,4 @@
-import { ApiField } from '@really-less/decorators';
+import { ApiField } from '@really-less/main';
 
 export class GreetingField {
   @ApiField({

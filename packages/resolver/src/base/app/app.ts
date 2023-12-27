@@ -1,7 +1,7 @@
 import { App, NestedStack, Stack } from 'aws-cdk-lib';
 import { RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Role } from 'aws-cdk-lib/aws-iam';
-import { REALLY_LESS_CONTEXT, REALLY_LESS_CONTEXT_VALUE } from '@really-less/decorators';
+import { REALLY_LESS_CONTEXT, REALLY_LESS_CONTEXT_VALUE } from '../../../../main/lib';
 
 export interface AppResources {
   stack: Stack;

@@ -10,7 +10,7 @@ import {
   EventRuleMetadata,
   LambdaReflectKeys,
   ResourceMetadata,
-} from '@really-less/decorators';
+} from '../../../../../main/lib';
 
 interface EventResourceProps {
   scope: NestedStack;

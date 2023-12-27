@@ -1,6 +1,6 @@
 import { Duration, NestedStack } from 'aws-cdk-lib';
 import { Code, Function as LambdaFunction, Runtime } from 'aws-cdk-lib/aws-lambda';
-import { LambdaMetadata } from '@really-less/decorators';
+import { LambdaMetadata } from '../../../../../main/lib';
 
 export const NodeRuntime = {
   16: Runtime.NODEJS_16_X,
