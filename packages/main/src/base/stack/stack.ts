@@ -10,6 +10,7 @@ import {
 import { AppResources } from '../app/app';
 import { ApiProps, ApiResource } from './resources/api';
 import { StepFunctionResource } from './resources/step_function';
+import { EventResource } from './resources/event';
 
 interface StackConfig {
   apiGateway?: ApiProps;
@@ -63,6 +64,18 @@ export class AppNestedStack extends NestedStack {
           });
 
           stepFunctionResource.generate();
+          break;
+        }
+        case ResourceType.EVENT: {
+          const eventResource = new EventResource({
+            resource,
+            scope: this,
+            stackName: name,
+            metadata: resourceMetadata,
+          });
+
+          eventResource.generate();
+          break;
         }
       }
     }

@@ -1,7 +1,18 @@
 import { LambdaMetadata, createLambdaDecorator } from '../lambda/lambda';
 import { ResourceType, createResourceDecorator } from '../resource/resource';
 
-export interface EventRuleProps {
+export interface CommonEventProps {
+  /**
+   * @property {number} maxEventAge - number equivalent to seconds
+   */
+  maxEventAge?: number;
+  /**
+   * @property {number} retryAttempts - number of retries
+   */
+  retryAttempts?: number;
+}
+
+export interface EventRuleProps extends CommonEventProps {
   rule?: string;
 }
 
@@ -20,7 +31,7 @@ export interface EventCronProps {
   schedule: string | ScheduleTime;
 }
 
-export interface EventRuleMetadata extends LambdaMetadata, Required<EventRuleProps> {}
+export interface EventRuleMetadata extends LambdaMetadata, EventRuleProps {}
 export interface EventCronMetadata extends LambdaMetadata, EventCronProps {}
 
 export const Event = createResourceDecorator({

@@ -72,7 +72,7 @@ export class StepFunctionResource extends CommonResource {
         this.metadata.filename,
         handler,
         'sf-handler',
-        ['api']
+        ['api', 'event']
       );
     }
 

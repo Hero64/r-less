@@ -77,7 +77,7 @@ export class ApiResource extends CommonResource {
         this.apiMetadata.filename,
         handler,
         'api-handler',
-        ['stepfunction']
+        ['stepfunction', 'event']
       );
 
       const { bodySchema, requestTemplate, requestParameters, requestValidations } =
