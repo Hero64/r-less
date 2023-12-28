@@ -3,7 +3,7 @@ import 'reflect-metadata';
 export interface LambdaProps {
   timeout?: number;
   memory?: number;
-  runtime: 18 | 16;
+  runtime: 20 | 18 | 16;
 }
 
 export interface LambdaMetadata {

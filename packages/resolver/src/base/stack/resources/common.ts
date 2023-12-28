@@ -5,6 +5,7 @@ import { LambdaMetadata } from '../../../../../main/lib';
 export const NodeRuntime = {
   16: Runtime.NODEJS_16_X,
   18: Runtime.NODEJS_18_X,
+  20: Runtime.NODEJS_20_X,
 };
 
 export class CommonResource {

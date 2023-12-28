@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@really-less/main": "*",
-    "aws-cdk-lib": "2.85.0",
+    "aws-cdk-lib": "2.117.0",
     "constructs": "10.2.61",
     "reflect-metadata": "0.1.13"
   },
