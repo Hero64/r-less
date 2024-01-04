@@ -1,6 +1,5 @@
 import 'reflect-metadata';
-
-import { KeyOfClass } from '../../types/utils';
+import { OnlyNumberString } from 'types/utils';
 
 export enum ModelMetadataKeys {
   MODEL = 'dynamo:model',
@@ -10,8 +9,8 @@ export enum ModelMetadataKeys {
 
 export interface DynamoIndex<T extends Function> {
   name: string;
-  partitionKey: KeyOfClass<T>;
-  sortKey?: KeyOfClass<T>;
+  partitionKey: keyof OnlyNumberString<T['prototype']>;
+  sortKey?: keyof OnlyNumberString<T['prototype']>;
 }
 
 export interface DynamoModelProps<T extends Function> {

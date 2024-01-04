@@ -17,7 +17,7 @@ import {
   DynamoIndex,
   ModelMetadataKeys,
 } from '../../decorators/dynamo/dynamo';
-import { DeepPartial, KeyOfClass } from '../../types/utils';
+import { DeepPartial, KeyOfClass, OnlyNumberString } from '../../types/utils';
 
 export interface ModelMetadata<T extends Function>
   extends Required<DynamoModelProps<T>> {}
@@ -61,11 +61,9 @@ type AndFilter<E> = {
 type SortDirectionType = 'asc' | 'desc';
 
 type KeyCondition<E> = {
-  partition: {
-    [key in keyof E]?: E[key];
-  };
+  partition: Partial<OnlyNumberString<E>>;
   sort?: {
-    [key in keyof E]?:
+    [key in keyof E as E[key] extends number | string ? key : never]?:
       | E[key]
       | (E[key] extends number
           ? OperationExpression<E[key]>
@@ -274,7 +272,8 @@ export const createRepository = <E extends { new (...args: any[]): {} }>(model: 
         [`#${partitionName}`]: partitionName,
       },
       valueResolver: {
-        [`:${partitionName}`]: partition[partitionName as keyof E],
+        [`:${partitionName}`]:
+          partition[partitionName as keyof Partial<OnlyNumberString<E>>],
       },
     };
 
@@ -284,7 +283,7 @@ export const createRepository = <E extends { new (...args: any[]): {} }>(model: 
     filterExpression.expression += ' and ';
 
     const sortName = Object.keys(sort)[0];
-    const sortValue = sort[sortName as keyof E];
+    const sortValue = (sort as any)[sortName];
     const valueSortName = `${sortName}_sort`;
 
     if (typeof sortValue === 'object' && sortValue) {
@@ -302,7 +301,7 @@ export const createRepository = <E extends { new (...args: any[]): {} }>(model: 
         filterExpression.valueResolver[`:${valueSortName}`] = values;
       }
     } else {
-      filterExpression.valueResolver[`:${valueSortName}`] = sort[sortName as keyof E];
+      filterExpression.valueResolver[`:${valueSortName}`] = (sort as any)[sortName];
       filterExpression.expression += `#${sortName} = :${valueSortName}`;
     }
     filterExpression.nameResolver[`#${sortName}`] = sortName;

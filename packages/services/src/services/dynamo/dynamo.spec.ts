@@ -11,6 +11,13 @@ interface Address {
 @DynamoModel({
   name: 'users',
   tracing: true,
+  indexes: [
+    {
+      name: '',
+      partitionKey: 'email',
+      sortKey: 'age',
+    },
+  ],
 })
 class User {
   @PartitionKey
