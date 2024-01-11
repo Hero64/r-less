@@ -1,44 +1,84 @@
 import { App, NestedStack, Stack } from 'aws-cdk-lib';
-import { RestApiProps } from 'aws-cdk-lib/aws-apigateway';
-import { REALLY_LESS_CONTEXT, REALLY_LESS_CONTEXT_VALUE } from '@really-less/main';
+import { RestApi, RestApiProps } from 'aws-cdk-lib/aws-apigateway';
+import { Role } from 'aws-cdk-lib/aws-iam';
+import {
+  REALLY_LESS_CONTEXT,
+  REALLY_LESS_CONTEXT_VALUE,
+  ServicesValues,
+} from '@really-less/main';
+
+import { createRole } from '../role/role';
 
 export type Environment = Record<string, number | string>;
 
-
-
-
-
-export interface ApiGatewayProps {
+export interface ApiGatewayGlobalProps {
   name: string;
-  env?: Environment;
   props?: RestApiProps;
 }
 
+export interface LambdaGlobalProps {
+  environment?: Environment;
+  services?: ServicesValues[];
+}
+
 export interface GlobalConfig {
+  /**
+   * Applies to all lambdas
+   */
   env?: Environment;
-  services?: 
-  apiGateway?: ApiGatewayProps;
+  /**
+   * Api gateway config by all api resource
+   */
+  apiGateway?: ApiGatewayGlobalProps;
+  /**
+   * Lambda config
+   */
+  lambda?: LambdaGlobalProps;
 }
 
 export interface AppResources {
   stack: Stack;
-  global?: GlobalConfig;
+  api?: RestApi;
+  role: Role;
 }
 
 export interface CreateAppProps {
   name: string;
   stacks: ((appResources: AppResources) => NestedStack)[];
+  global?: GlobalConfig;
 }
 
 process.env[REALLY_LESS_CONTEXT] = REALLY_LESS_CONTEXT_VALUE;
 
 class AppStack extends Stack {
   constructor(scope: App, props: CreateAppProps) {
-    const { stacks, name } = props;
+    const { stacks, name, global } = props;
+    let globalRestApi: RestApi | undefined = undefined;
+    if (global?.apiGateway) {
+      globalRestApi = new RestApi(scope, global.apiGateway.name, global.apiGateway.props);
+    }
+    const appRole = createRole({
+      scope,
+      services: global?.lambda?.services || [
+        'dynamodb',
+        's3',
+        'lambda',
+        'cloudwatch',
+        'sqs',
+        'step_function',
+        'kms',
+        'ssm',
+        'event',
+      ],
+      name: 'app-role',
+    });
+
     super(scope, name, {});
     for (let stack of stacks) {
       stack({
         stack: this,
+        api: globalRestApi,
+        role: appRole,
       });
     }
   }

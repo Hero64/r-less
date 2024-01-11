@@ -11,12 +11,14 @@ import {
   LambdaReflectKeys,
   ResourceMetadata,
 } from '../../../../../main/lib';
+import { Role } from 'aws-cdk-lib/aws-iam';
 
 interface EventResourceProps {
   scope: NestedStack;
   resource: Resource;
   stackName: string;
   metadata: ResourceMetadata;
+  role: Role;
 }
 
 export class EventResource extends CommonResource {
@@ -25,8 +27,8 @@ export class EventResource extends CommonResource {
   private bus: EventBus;
 
   constructor(props: EventResourceProps) {
-    const { scope, stackName, resource, metadata } = props;
-    super(scope, stackName);
+    const { scope, stackName, resource, metadata, role } = props;
+    super(scope, stackName, role);
     this.resource = resource;
     this.metadata = metadata;
   }
@@ -38,13 +40,14 @@ export class EventResource extends CommonResource {
     );
 
     for (const handler of handlers) {
-      const lambda = this.createLambda(
-        this.metadata.foldername,
-        this.metadata.filename,
+      const lambda = this.createLambda({
+        pathName: this.metadata.foldername,
+        filename: this.metadata.filename,
         handler,
-        'event-handler',
-        ['stepfunction', 'api']
-      );
+        prefix: 'event-handler',
+        excludeFiles: ['stepfunction', 'api'],
+        role: this.role,
+      });
 
       let ruleProps: { -readonly [key in keyof RuleProps]: RuleProps[key] } = {
         targets: [

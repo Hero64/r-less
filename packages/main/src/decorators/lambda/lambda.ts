@@ -1,9 +1,23 @@
 import 'reflect-metadata';
+import { ServicesValues } from '../../types/services';
 
 export interface LambdaProps {
+  /**
+   * Lambda execution time in seconds
+   */
   timeout?: number;
+  /**
+   * The amount of memory, in MB, that is allocated to your lambda function.
+   */
   memory?: number;
-  runtime: 20 | 18 | 16;
+  /**
+   * version of node environment
+   */
+  runtime?: 20 | 18 | 16;
+  /**
+   * services used by lambda function
+   */
+  services?: ServicesValues;
 }
 
 export interface LambdaMetadata {

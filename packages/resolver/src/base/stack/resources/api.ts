@@ -10,6 +10,7 @@ import {
   RequestValidator,
   IResource,
 } from 'aws-cdk-lib/aws-apigateway';
+import { Role } from 'aws-cdk-lib/aws-iam';
 
 import {
   ApiResourceMetadata,
@@ -17,7 +18,7 @@ import {
   ApiFieldSource,
   ApiFieldMetadata,
   LambdaReflectKeys,
-} from '../../../../../main/lib';
+} from '@really-less/main';
 import { Resource } from '../stack';
 import { CommonResource } from './common';
 
@@ -31,6 +32,7 @@ interface ApiResourceProps {
   resource: Resource;
   stackName: string;
   apiMetadata: ApiResourceMetadata;
+  role: Role;
   apiProps?: ApiProps;
   api?: RestApi;
 }
@@ -56,8 +58,8 @@ export class ApiResource extends CommonResource {
   private apiResources: Record<string, IResource> = {};
 
   constructor(props: ApiResourceProps) {
-    const { scope, api, apiProps, stackName, apiMetadata, resource } = props;
-    super(scope, stackName);
+    const { scope, api, apiProps, stackName, apiMetadata, resource, role } = props;
+    super(scope, stackName, role);
 
     this.apiProps = apiProps;
     this.apiMetadata = apiMetadata;
@@ -72,13 +74,14 @@ export class ApiResource extends CommonResource {
     );
 
     for (const handler of handlers) {
-      const lambda = this.createLambda(
-        this.apiMetadata.foldername,
-        this.apiMetadata.filename,
+      const lambda = this.createLambda({
+        pathName: this.apiMetadata.foldername,
+        filename: this.apiMetadata.filename,
         handler,
-        'api-handler',
-        ['stepfunction', 'event']
-      );
+        prefix: 'api-handler',
+        excludeFiles: ['stepfunction', 'event'],
+        role: this.role,
+      });
 
       const { bodySchema, requestTemplate, requestParameters, requestValidations } =
         this.parseRequestArguments(handler);

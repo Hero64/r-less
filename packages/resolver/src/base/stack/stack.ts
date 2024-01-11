@@ -5,15 +5,19 @@ import {
   ResourceMetadata,
   ResourceReflectKeys,
   ResourceType,
+  ServicesValues,
   StepFunctionResourceMetadata,
-} from '../../../../main/lib';
+} from '@really-less/main';
 import { AppResources } from '../app/app';
 import { ApiProps, ApiResource } from './resources/api';
 import { StepFunctionResource } from './resources/step_function';
 import { EventResource } from './resources/event';
+import { Role } from 'aws-cdk-lib/aws-iam';
+import { createRole } from '../role/role';
 
 interface StackConfig {
   apiGateway?: ApiProps;
+  services?: ServicesValues[];
 }
 
 interface CreateStackProps extends StackConfig {
@@ -27,13 +31,23 @@ export interface Resource {
 
 export class AppNestedStack extends NestedStack {
   private api?: RestApi;
+  private role?: Role;
 
   constructor(props: CreateStackProps, appResources: AppResources) {
-    const { name, resources, apiGateway } = props;
-    const { stack, api } = appResources;
+    const { name, resources, apiGateway, services } = props;
+    const { stack, api, role } = appResources;
     super(stack, name, {});
 
     this.api = apiGateway?.name ? undefined : api;
+    this.role = role;
+
+    if (services) {
+      this.role = createRole({
+        scope: stack,
+        services,
+        name,
+      });
+    }
 
     for (const resource of resources) {
       const resourceMetadata: ResourceMetadata = Reflect.getMetadata(
@@ -45,6 +59,7 @@ export class AppNestedStack extends NestedStack {
         case ResourceType.API: {
           const apiResource = new ApiResource({
             resource,
+            role,
             scope: this,
             stackName: name,
             api: this.api,
@@ -61,6 +76,7 @@ export class AppNestedStack extends NestedStack {
             scope: this,
             stackName: name,
             metadata: resourceMetadata as StepFunctionResourceMetadata,
+            role,
           });
 
           stepFunctionResource.generate();
@@ -72,6 +88,7 @@ export class AppNestedStack extends NestedStack {
             scope: this,
             stackName: name,
             metadata: resourceMetadata,
+            role,
           });
 
           eventResource.generate();
