@@ -24,13 +24,15 @@ import {
   ValidateValues,
   Validations,
   LambdaReflectKeys,
-} from '../../../../../main/lib';
+} from '@really-less/main';
+import { Role } from 'aws-cdk-lib/aws-iam';
 
 interface StepFunctionResourceProps {
   scope: NestedStack;
   resource: Resource;
   stackName: string;
   metadata: StepFunctionResourceMetadata;
+  role: Role;
 }
 
 export class StepFunctionResource extends CommonResource {
@@ -39,8 +41,8 @@ export class StepFunctionResource extends CommonResource {
   private taskIterator: number = 0;
 
   constructor(props: StepFunctionResourceProps) {
-    const { scope, stackName, resource, metadata } = props;
-    super(scope, stackName);
+    const { scope, stackName, resource, metadata, role } = props;
+    super(scope, stackName, role);
 
     this.metadata = metadata;
     this.resource = resource;
@@ -67,13 +69,14 @@ export class StepFunctionResource extends CommonResource {
 
     for (const handler of handlersMetadata) {
       handlers[handler.name] = handler;
-      lambdas[handler.name] = this.createLambda(
-        this.metadata.foldername,
-        this.metadata.filename,
+      lambdas[handler.name] = this.createLambda({
+        pathName: this.metadata.foldername,
+        filename: this.metadata.filename,
         handler,
-        'sf-handler',
-        ['api', 'event']
-      );
+        prefix: 'sf-handler',
+        excludeFiles: ['api', 'event'],
+        role: this.role,
+      });
     }
 
     return {
