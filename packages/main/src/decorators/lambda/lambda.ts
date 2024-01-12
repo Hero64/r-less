@@ -17,7 +17,7 @@ export interface LambdaProps {
   /**
    * services used by lambda function
    */
-  services?: ServicesValues;
+  services?: ServicesValues[];
 }
 
 export interface LambdaMetadata {

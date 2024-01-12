@@ -5,8 +5,8 @@ import {
   Role,
   ServicePrincipal,
 } from 'aws-cdk-lib/aws-iam';
-import { createMd5Hash } from 'utils/hash';
-import { Construct } from 'constructs';
+import { createMd5Hash } from '../../utils/hash';
+import { Stack } from 'aws-cdk-lib';
 
 interface CreateRoleProps {
   /**
@@ -16,7 +16,7 @@ interface CreateRoleProps {
   /**
    * App or NestedStack
    */
-  scope: Construct;
+  scope: Stack;
   /**
    * Role name
    * @default role-{md5hash}
@@ -134,9 +134,10 @@ const createPolicyStatement = (services: ServicesValues[]) => {
         actions: defaultPermissions[service].map((permission) => {
           return `${serviceName}:${permission}`;
         }),
+        resources: ['*'],
       });
     } else {
-      const { type, permissions, resources } = service;
+      const { type, permissions, resources = ['*'] } = service;
       let rolePermissions: string[] = permissions as string[];
       let serviceName: string = type;
       if (type === 'custom') {
@@ -160,15 +161,14 @@ export const createRole = (props: CreateRoleProps) => {
   const { scope, services, principal = 'lambda.amazonaws.com' } = props;
   const roleName = getRoleName(props);
 
-  const policeDocument = new PolicyDocument({
-    statements: createPolicyStatement(services),
-  });
-
-  return new Role(scope, '', {
+  const role = new Role(scope, roleName, {
     roleName,
     assumedBy: new ServicePrincipal(principal),
-    inlinePolicies: {
-      [`${roleName}-policy`]: policeDocument,
-    },
   });
+
+  createPolicyStatement(services).map((policy) => {
+    role.addToPolicy(policy);
+  });
+
+  return role;
 };

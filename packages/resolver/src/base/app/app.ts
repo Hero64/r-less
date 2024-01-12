@@ -53,12 +53,14 @@ process.env[REALLY_LESS_CONTEXT] = REALLY_LESS_CONTEXT_VALUE;
 class AppStack extends Stack {
   constructor(scope: App, props: CreateAppProps) {
     const { stacks, name, global } = props;
+    super(scope, name, {});
     let globalRestApi: RestApi | undefined = undefined;
     if (global?.apiGateway) {
       globalRestApi = new RestApi(scope, global.apiGateway.name, global.apiGateway.props);
     }
+
     const appRole = createRole({
-      scope,
+      scope: this,
       services: global?.lambda?.services || [
         'dynamodb',
         's3',
@@ -70,10 +72,9 @@ class AppStack extends Stack {
         'ssm',
         'event',
       ],
-      name: 'app-role',
+      name: 'app-rol',
     });
 
-    super(scope, name, {});
     for (let stack of stacks) {
       stack({
         stack: this,
