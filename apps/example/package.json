@@ -11,8 +11,8 @@
   "devDependencies": {
     "@really-less/cli": "*",
     "@really-less/resolver": "*",
-    "aws-cdk": "2.85.0",
-    "cdk": "2.85.0"
+    "aws-cdk": "2.120.0",
+    "cdk": "2.120.0"
   },
   "dependencies": {
     "@really-less/main": "*",

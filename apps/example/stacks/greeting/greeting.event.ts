@@ -10,7 +10,11 @@ export class GreetingEvent {
   }
 
   @EventCron({
-    schedule: '* * * * *',
+    schedule: {
+      day: '*',
+      hour: 1,
+      minute: 0,
+    },
   })
   sayHelloEveryTime() {
     console.log('Hello again');
