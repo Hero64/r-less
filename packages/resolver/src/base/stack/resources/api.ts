@@ -11,6 +11,7 @@ import {
   IResource,
 } from 'aws-cdk-lib/aws-apigateway';
 import { Role } from 'aws-cdk-lib/aws-iam';
+import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
 
 import {
   ApiResourceMetadata,
@@ -35,6 +36,7 @@ interface ApiResourceProps {
   role: Role;
   apiProps?: ApiProps;
   api?: RestApi;
+  layer?: LayerVersion;
 }
 
 const schemaTypeMap: Record<string, JsonSchemaType> = {
@@ -58,8 +60,8 @@ export class ApiResource extends CommonResource {
   private apiResources: Record<string, IResource> = {};
 
   constructor(props: ApiResourceProps) {
-    const { scope, api, apiProps, stackName, apiMetadata, resource, role } = props;
-    super(scope, stackName, role);
+    const { scope, api, apiProps, stackName, apiMetadata, resource, role, layer } = props;
+    super(scope, stackName, role, layer);
 
     this.apiProps = apiProps;
     this.apiMetadata = apiMetadata;
@@ -81,6 +83,7 @@ export class ApiResource extends CommonResource {
         prefix: 'api-handler',
         excludeFiles: ['stepfunction', 'event'],
         role: this.role,
+        layer: this.layer,
       });
 
       const { bodySchema, requestTemplate, requestParameters, requestValidations } =

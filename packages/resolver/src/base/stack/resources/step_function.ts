@@ -1,5 +1,5 @@
 import { NestedStack, Duration } from 'aws-cdk-lib';
-import { Function as LambdaFunction } from 'aws-cdk-lib/aws-lambda';
+import { Function as LambdaFunction, LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import {
   INextable,
   Fail,
@@ -15,8 +15,7 @@ import {
   DefinitionBody,
 } from 'aws-cdk-lib/aws-stepfunctions';
 import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks';
-import { CommonResource } from './common';
-import { Resource } from '../stack';
+import { Role } from 'aws-cdk-lib/aws-iam';
 import {
   LambdaTaskMetadata,
   StepFunctionResourceMetadata,
@@ -25,7 +24,9 @@ import {
   Validations,
   LambdaReflectKeys,
 } from '@really-less/main';
-import { Role } from 'aws-cdk-lib/aws-iam';
+
+import { CommonResource } from './common';
+import { Resource } from '../stack';
 
 interface StepFunctionResourceProps {
   scope: NestedStack;
@@ -33,6 +34,7 @@ interface StepFunctionResourceProps {
   stackName: string;
   metadata: StepFunctionResourceMetadata;
   role: Role;
+  layer?: LayerVersion;
 }
 
 export class StepFunctionResource extends CommonResource {
@@ -41,8 +43,8 @@ export class StepFunctionResource extends CommonResource {
   private taskIterator: number = 0;
 
   constructor(props: StepFunctionResourceProps) {
-    const { scope, stackName, resource, metadata, role } = props;
-    super(scope, stackName, role);
+    const { scope, stackName, resource, metadata, role, layer } = props;
+    super(scope, stackName, role, layer);
 
     this.metadata = metadata;
     this.resource = resource;
@@ -76,6 +78,7 @@ export class StepFunctionResource extends CommonResource {
         prefix: 'sf-handler',
         excludeFiles: ['api', 'event'],
         role: this.role,
+        layer: this.layer,
       });
     }
 

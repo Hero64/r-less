@@ -158,7 +158,7 @@ const buildLayer = async (packageJsonSha1: string, cached: WriteCacheProps = {})
     }
 
     await installPackages();
-    await rename('.resources/node_modules', '.resources/layers/nodejs');
+    await rename('.resources/node_modules', '.resources/layers/nodejs/node_modules');
   } catch (err) {
     console.error(err);
     await removeResourceFolder();

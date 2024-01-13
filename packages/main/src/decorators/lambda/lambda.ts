@@ -80,10 +80,10 @@ export const createLambdaDecorator =
 
     descriptor.value = async (event: any, _context: any, callback: any) => {
       try {
-        const methodArguments = lambdaArguments[methodName].map((argumentType) =>
-          argumentsByType[argumentType]({ event, callback })
+        const methodArguments = (lambdaArguments?.[methodName] || []).map(
+          (argumentType) => argumentsByType[argumentType]({ event, callback })
         );
-        await originalValue.apply(this, methodArguments);
+        callback(null, await originalValue.apply(this, methodArguments));
       } catch (e) {
         if (e instanceof Error) {
           callback(e.message);

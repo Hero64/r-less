@@ -1,5 +1,7 @@
 import { NestedStack } from 'aws-cdk-lib';
 import { RestApi } from 'aws-cdk-lib/aws-apigateway';
+import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
+import { Role } from 'aws-cdk-lib/aws-iam';
 import {
   ApiResourceMetadata,
   ResourceMetadata,
@@ -12,7 +14,6 @@ import { AppResources } from '../app/app';
 import { ApiProps, ApiResource } from './resources/api';
 import { StepFunctionResource } from './resources/step_function';
 import { EventResource } from './resources/event';
-import { Role } from 'aws-cdk-lib/aws-iam';
 import { createRole } from '../role/role';
 
 interface StackConfig {
@@ -35,7 +36,7 @@ export class AppNestedStack extends NestedStack {
 
   constructor(props: CreateStackProps, appResources: AppResources) {
     const { name, resources, apiGateway, services } = props;
-    const { stack, api, role } = appResources;
+    const { stack, api, role, layer } = appResources;
     super(stack, name, {});
 
     this.api = apiGateway?.name ? undefined : api;
@@ -59,7 +60,8 @@ export class AppNestedStack extends NestedStack {
         case ResourceType.API: {
           const apiResource = new ApiResource({
             resource,
-            role,
+            layer,
+            role: this.role,
             scope: this,
             stackName: name,
             api: this.api,
@@ -73,6 +75,7 @@ export class AppNestedStack extends NestedStack {
         case ResourceType.STEP_FUNCTION: {
           const stepFunctionResource = new StepFunctionResource({
             resource,
+            layer,
             scope: this,
             stackName: name,
             metadata: resourceMetadata as StepFunctionResourceMetadata,
@@ -85,6 +88,7 @@ export class AppNestedStack extends NestedStack {
         case ResourceType.EVENT: {
           const eventResource = new EventResource({
             resource,
+            layer,
             scope: this,
             stackName: name,
             metadata: resourceMetadata,

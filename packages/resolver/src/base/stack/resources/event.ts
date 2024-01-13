@@ -2,6 +2,8 @@ import 'reflect-metadata';
 import { Duration, NestedStack } from 'aws-cdk-lib';
 import { CronOptions, EventBus, Rule, RuleProps, Schedule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction as LambdaFunctionTarget } from 'aws-cdk-lib/aws-events-targets';
+import { Role } from 'aws-cdk-lib/aws-iam';
+import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
 
 import { Resource } from '../stack';
 import { CommonResource } from './common';
@@ -11,7 +13,6 @@ import {
   LambdaReflectKeys,
   ResourceMetadata,
 } from '../../../../../main/lib';
-import { Role } from 'aws-cdk-lib/aws-iam';
 
 interface EventResourceProps {
   scope: NestedStack;
@@ -19,6 +20,7 @@ interface EventResourceProps {
   stackName: string;
   metadata: ResourceMetadata;
   role: Role;
+  layer?: LayerVersion;
 }
 
 export class EventResource extends CommonResource {
@@ -27,8 +29,8 @@ export class EventResource extends CommonResource {
   private bus: EventBus;
 
   constructor(props: EventResourceProps) {
-    const { scope, stackName, resource, metadata, role } = props;
-    super(scope, stackName, role);
+    const { scope, stackName, resource, metadata, role, layer } = props;
+    super(scope, stackName, role, layer);
     this.resource = resource;
     this.metadata = metadata;
   }
@@ -47,6 +49,7 @@ export class EventResource extends CommonResource {
         prefix: 'event-handler',
         excludeFiles: ['stepfunction', 'api'],
         role: this.role,
+        layer: this.layer,
       });
 
       let ruleProps: { -readonly [key in keyof RuleProps]: RuleProps[key] } = {

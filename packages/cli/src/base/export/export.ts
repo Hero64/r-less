@@ -1,6 +1,6 @@
-import { readFile, writeFile } from 'fs/promises';
+import { readFile, writeFile, rename } from 'node:fs/promises';
 import { glob } from 'glob';
-import { dirname, join } from 'path';
+import { dirname, join } from 'node:path';
 
 const getResourceFile = (resource: string, file: string) => {
   const [fileName, className] = resource.split('.');
@@ -12,6 +12,30 @@ const getResourceFile = (resource: string, file: string) => {
     className,
     path: requiredFile?.[1].replace(/(\(|\)|"|"|;)/g, '') || '',
   };
+};
+
+export const changeImport = (stackContent: string, oldName: string, newName: string) => {
+  return stackContent.replace(`require("${oldName}`, `require("${newName}`);
+};
+
+export const renameDotFile = async (
+  stackContent: string,
+  filePath: string,
+  importPath: string
+) => {
+  const hasDots = filePath.indexOf('.');
+  if (hasDots === -1) {
+    return;
+  }
+
+  const newFileName = `./${filePath.replaceAll('.', '-').replace('-js', '.js')}`;
+
+  await rename(filePath, newFileName);
+  return changeImport(
+    stackContent,
+    importPath,
+    importPath.replaceAll('.', '-').replace('-', '.')
+  );
 };
 
 const addExportMethodInFile = async (path: string, className: string) => {
@@ -27,7 +51,7 @@ const addExportMethodInFile = async (path: string, className: string) => {
     `;
   }
 
-  writeFile(
+  await writeFile(
     path,
     `
       ${content}
@@ -54,12 +78,22 @@ export const getStackFiles = async () => {
       continue;
     }
 
+    let newContent = content;
+
     const resourceList = list.replaceAll(' ', '').split(',');
     for (const resource of resourceList) {
       const { path, className } = getResourceFile(resource, content) || '';
 
       const filePath = join(dirname(file), `${path}.js`);
-      addExportMethodInFile(filePath, className);
+      await addExportMethodInFile(filePath, className);
+      const renameResponse = await renameDotFile(newContent, filePath, path);
+      if (renameResponse) {
+        newContent = renameResponse;
+      }
+    }
+
+    if (content !== newContent) {
+      await writeFile(file, newContent);
     }
   }
 };

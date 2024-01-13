@@ -1,6 +1,11 @@
 import { Duration, NestedStack } from 'aws-cdk-lib';
-import { Code, Function as LambdaFunction, Runtime } from 'aws-cdk-lib/aws-lambda';
-import { LambdaMetadata, ServicesValues } from '../../../../../main/lib';
+import {
+  Code,
+  Function as LambdaFunction,
+  LayerVersion,
+  Runtime,
+} from 'aws-cdk-lib/aws-lambda';
+import { LambdaMetadata } from '../../../../../main/lib';
 import { Role } from 'aws-cdk-lib/aws-iam';
 import { createRole } from '../../role/role';
 
@@ -17,13 +22,15 @@ interface CreateLambdaProps {
   prefix?: string;
   excludeFiles?: string[];
   role?: Role;
+  layer?: LayerVersion;
 }
 
 export class CommonResource {
   constructor(
     protected scope: NestedStack,
     protected stackName: string,
-    protected role: Role
+    protected role: Role,
+    protected layer?: LayerVersion
   ) {}
 
   protected createLambda({
@@ -31,6 +38,7 @@ export class CommonResource {
     filename,
     handler,
     role,
+    layer,
     prefix = '',
     excludeFiles = [],
   }: CreateLambdaProps) {
@@ -47,7 +55,7 @@ export class CommonResource {
     return new LambdaFunction(this.scope, lambdaName, {
       runtime: NodeRuntime[handler.lambda?.runtime || 18],
       code: Code.fromAsset(pathName, {
-        exclude: ['*.stack.js', ...excludeFiles.map((file) => `*.${file}.js`)],
+        exclude: ['*.stack.js', ...excludeFiles.map((file) => `*-${file}.js`)],
       }),
       handler: `${filename}.${handler.name}`,
       timeout: handler.lambda?.timeout
@@ -55,6 +63,7 @@ export class CommonResource {
         : undefined,
       memorySize: handler.lambda?.memory,
       role: lambdaRole,
+      layers: layer ? [layer] : undefined,
     });
   }
 }

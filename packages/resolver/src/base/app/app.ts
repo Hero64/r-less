@@ -1,13 +1,17 @@
 import { App, NestedStack, Stack } from 'aws-cdk-lib';
 import { RestApi, RestApiProps } from 'aws-cdk-lib/aws-apigateway';
 import { Role } from 'aws-cdk-lib/aws-iam';
+import { Code, LayerVersion } from 'aws-cdk-lib/aws-lambda';
+import { cwd } from 'node:process';
+import { existsSync } from 'node:fs';
+
 import {
   REALLY_LESS_CONTEXT,
   REALLY_LESS_CONTEXT_VALUE,
   ServicesValues,
 } from '@really-less/main';
-
 import { createRole } from '../role/role';
+import { join } from 'node:path';
 
 export type Environment = Record<string, number | string>;
 
@@ -38,8 +42,9 @@ export interface GlobalConfig {
 
 export interface AppResources {
   stack: Stack;
-  api?: RestApi;
   role: Role;
+  layer?: LayerVersion;
+  api?: RestApi;
 }
 
 export interface CreateAppProps {
@@ -75,11 +80,23 @@ class AppStack extends Stack {
       name: 'app-rol',
     });
 
+    let appLayer: LayerVersion | undefined = undefined;
+
+    const layerPath = join(cwd(), '.resources/layers');
+    console.log(layerPath);
+
+    if (existsSync(layerPath)) {
+      appLayer = new LayerVersion(this, 'app-layer', {
+        code: Code.fromAsset(layerPath),
+      });
+    }
+
     for (let stack of stacks) {
       stack({
         stack: this,
         api: globalRestApi,
         role: appRole,
+        layer: appLayer,
       });
     }
   }
