@@ -1,7 +1,6 @@
 import { NestedStack } from 'aws-cdk-lib';
-import { RestApi } from 'aws-cdk-lib/aws-apigateway';
-import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
-import { Role } from 'aws-cdk-lib/aws-iam';
+import { IResource, RestApi } from 'aws-cdk-lib/aws-apigateway';
+
 import {
   ApiResourceMetadata,
   ResourceMetadata,
@@ -15,6 +14,7 @@ import { ApiProps, ApiResource } from './resources/api';
 import { StepFunctionResource } from './resources/step_function';
 import { EventResource } from './resources/event';
 import { createRole } from '../role/role';
+import { CommonResourceProps } from './resources/common';
 
 interface StackConfig {
   apiGateway?: ApiProps;
@@ -32,18 +32,20 @@ export interface Resource {
 
 export class AppNestedStack extends NestedStack {
   private api?: RestApi;
-  private role?: Role;
+  private apiResources?: Record<string, IResource>;
 
   constructor(props: CreateStackProps, appResources: AppResources) {
     const { name, resources, apiGateway, services } = props;
-    const { stack, api, role, layer } = appResources;
+    const { stack, api, role, layer, apiResources } = appResources;
+    const isNewApiGateway = Boolean(apiGateway?.name);
     super(stack, name, {});
 
-    this.api = apiGateway?.name ? undefined : api;
-    this.role = role;
+    this.api = isNewApiGateway ? undefined : api;
+    this.apiResources = isNewApiGateway ? {} : apiResources;
 
+    let resourceRole = role;
     if (services) {
-      this.role = createRole({
+      resourceRole = createRole({
         scope: stack,
         services,
         name,
@@ -56,17 +58,22 @@ export class AppNestedStack extends NestedStack {
         resource
       );
 
+      const commonOptions: CommonResourceProps = {
+        layer,
+        resource,
+        scope: this,
+        stackName: name,
+        role: resourceRole,
+      };
+
       switch (resourceMetadata.type) {
         case ResourceType.API: {
           const apiResource = new ApiResource({
-            resource,
-            layer,
-            role: this.role,
-            scope: this,
-            stackName: name,
+            ...commonOptions,
             api: this.api,
             apiProps: apiGateway,
             apiMetadata: resourceMetadata as ApiResourceMetadata,
+            apiResources: this.apiResources,
           });
 
           this.api = apiResource.generate();
@@ -74,12 +81,8 @@ export class AppNestedStack extends NestedStack {
         }
         case ResourceType.STEP_FUNCTION: {
           const stepFunctionResource = new StepFunctionResource({
-            resource,
-            layer,
-            scope: this,
-            stackName: name,
+            ...commonOptions,
             metadata: resourceMetadata as StepFunctionResourceMetadata,
-            role,
           });
 
           stepFunctionResource.generate();
@@ -87,12 +90,8 @@ export class AppNestedStack extends NestedStack {
         }
         case ResourceType.EVENT: {
           const eventResource = new EventResource({
-            resource,
-            layer,
-            scope: this,
-            stackName: name,
+            ...commonOptions,
             metadata: resourceMetadata,
-            role,
           });
 
           eventResource.generate();

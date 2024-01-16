@@ -34,8 +34,21 @@ export interface ApiLambdaMetadata extends LambdaMetadata {
 export type ApiFieldSource = 'body' | 'path' | 'query' | 'header';
 
 export interface ApiFieldProps {
+  /**
+   * original name of field
+   *
+   * @default string name of field class property
+   */
   field?: string;
+  /**
+   * specify field is required
+   * @default true
+   */
   required?: boolean;
+  /**
+   * source to obtain field value
+   * @default path
+   */
   source?: ApiFieldSource;
 }
 
@@ -52,21 +65,53 @@ export enum Method {
   DELETE = 'DELETE',
 }
 
+export const methodStatusCode: Record<Method, number> = {
+  GET: 200,
+  DELETE: 200,
+  PATCH: 200,
+  POST: 201,
+  PUT: 200,
+};
+
 export enum ApiReflectKeys {
   FIELD = 'api:field',
 }
 
 const createMethodDecorator = (method: Method) =>
-  createLambdaDecorator<ApiLambdaProps, ApiLambdaMetadata>((params, methodName) => {
-    const { path = '/', lambda } = params;
+  createLambdaDecorator<ApiLambdaProps, ApiLambdaMetadata>(
+    (params, methodName) => {
+      const { path = '/', lambda } = params;
 
-    return {
-      lambda,
-      method,
-      path,
-      name: methodName,
-    };
-  });
+      return {
+        lambda,
+        method,
+        path,
+        name: methodName,
+      };
+    },
+    (callback, response, isError) => {
+      if (isError) {
+        const isMessage = typeof response === 'string';
+        let selectResponseType = isMessage ? 'ERROR' : 'NOT_FOUND';
+        if (isMessage) {
+          selectResponseType =
+            ['UNAUTHORIZED', 'NOT_FOUND', 'FAILED'].find((m) => m.includes(response)) ||
+            selectResponseType;
+        }
+
+        callback(
+          selectResponseType,
+          isMessage
+            ? {
+                message: response,
+              }
+            : response
+        );
+      }
+
+      callback(null, response);
+    }
+  );
 
 export const Api = createResourceDecorator<ApiProps>({
   type: ResourceType.API,
@@ -89,7 +134,7 @@ export const ApiEvent = createEventDecorator((FieldClass) => {
 export const ApiField =
   (props: ApiFieldProps = {}) =>
   (target: any, propertyKey: string) => {
-    const { source = 'body', required = true, field } = props;
+    const { source = 'query', required = true, field } = props;
     const apiFieldMetadata: ApiFieldMetadata[] =
       Reflect.getMetadata(ApiReflectKeys.FIELD, target) || [];
 

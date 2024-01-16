@@ -15,7 +15,6 @@ import {
   DefinitionBody,
 } from 'aws-cdk-lib/aws-stepfunctions';
 import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks';
-import { Role } from 'aws-cdk-lib/aws-iam';
 import {
   LambdaTaskMetadata,
   StepFunctionResourceMetadata,
@@ -25,16 +24,11 @@ import {
   LambdaReflectKeys,
 } from '@really-less/main';
 
-import { CommonResource } from './common';
+import { CommonResource, CommonResourceProps } from './common';
 import { Resource } from '../stack';
 
-interface StepFunctionResourceProps {
-  scope: NestedStack;
-  resource: Resource;
-  stackName: string;
+interface StepFunctionResourceProps extends CommonResourceProps {
   metadata: StepFunctionResourceMetadata;
-  role: Role;
-  layer?: LayerVersion;
 }
 
 export class StepFunctionResource extends CommonResource {

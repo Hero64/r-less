@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-import { NestedStack } from 'aws-cdk-lib';
 import {
   JsonSchema,
   JsonSchemaType,
@@ -9,9 +8,8 @@ import {
   Model,
   RequestValidator,
   IResource,
+  IntegrationResponse,
 } from 'aws-cdk-lib/aws-apigateway';
-import { Role } from 'aws-cdk-lib/aws-iam';
-import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
 
 import {
   ApiResourceMetadata,
@@ -19,54 +17,86 @@ import {
   ApiFieldSource,
   ApiFieldMetadata,
   LambdaReflectKeys,
+  Method,
 } from '@really-less/main';
 import { Resource } from '../stack';
-import { CommonResource } from './common';
+import { CommonResource, CommonResourceProps } from './common';
 
 export interface ApiProps {
   name?: string;
   options?: RestApiProps;
 }
 
-interface ApiResourceProps {
-  scope: NestedStack;
-  resource: Resource;
-  stackName: string;
+interface ApiResourceProps extends CommonResourceProps {
   apiMetadata: ApiResourceMetadata;
-  role: Role;
   apiProps?: ApiProps;
   api?: RestApi;
-  layer?: LayerVersion;
+  apiResources: Record<string, IResource>;
 }
 
 const schemaTypeMap: Record<string, JsonSchemaType> = {
   String: JsonSchemaType.STRING,
   Number: JsonSchemaType.NUMBER,
   Boolean: JsonSchemaType.BOOLEAN,
+  Array: JsonSchemaType.ARRAY,
+  Object: JsonSchemaType.OBJECT,
 };
 
 const requestTemplateMap: Record<ApiFieldSource, (key: string) => string> = {
   body: (key) => `$input.json('$.${key}')`,
-  path: (key) => `$input.path('${key}')`,
+  path: (key) => `$input.params().path.get('${key}')`,
   query: (key) => `$input.params('${key}')`,
   header: (key) => `$input.params('${key}')`,
 };
+
+const defaultResponses = (method: Method): IntegrationResponse[] => [
+  {
+    statusCode: method === Method.POST ? '201' : '200',
+  },
+  {
+    statusCode: '401',
+    selectionPattern: '.*UNAUTHORIZED*.',
+  },
+  {
+    statusCode: '400',
+    selectionPattern: '.*FAILED*.',
+  },
+  {
+    statusCode: '404',
+    selectionPattern: '.*NOT_FOUND*.',
+  },
+  {
+    statusCode: '500',
+    selectionPattern: '.*ERROR*.',
+  },
+];
 
 export class ApiResource extends CommonResource {
   private apiProps?: ApiProps;
   private api: RestApi;
   private apiMetadata: ApiResourceMetadata;
   private resource: Resource;
-  private apiResources: Record<string, IResource> = {};
+  private apiResources: Record<string, IResource>;
 
   constructor(props: ApiResourceProps) {
-    const { scope, api, apiProps, stackName, apiMetadata, resource, role, layer } = props;
+    const {
+      scope,
+      api,
+      apiProps,
+      stackName,
+      apiMetadata,
+      resource,
+      role,
+      layer,
+      apiResources,
+    } = props;
     super(scope, stackName, role, layer);
 
     this.apiProps = apiProps;
     this.apiMetadata = apiMetadata;
     this.resource = resource;
     this.api = this.createApiRest(api);
+    this.apiResources = apiResources;
   }
 
   generate() {
@@ -89,9 +119,13 @@ export class ApiResource extends CommonResource {
       const { bodySchema, requestTemplate, requestParameters, requestValidations } =
         this.parseRequestArguments(handler);
       const apiResource = this.generateApiResource(handler);
+      const response = defaultResponses(handler.method);
+
       apiResource.addMethod(
         handler.method,
         new LambdaIntegration(lambda, {
+          proxy: false,
+          integrationResponses: response,
           requestTemplates: requestTemplate
             ? {
                 'application/json': requestTemplate,
@@ -120,6 +154,9 @@ export class ApiResource extends CommonResource {
                 }),
               }
             : undefined,
+          methodResponses: response.map((r) => ({
+            statusCode: r.statusCode,
+          })),
         }
       );
     }
@@ -156,17 +193,18 @@ export class ApiResource extends CommonResource {
       argsBySources[arg.source]?.push(arg);
     }
 
+    const bodySchema = this.getBodySchema(argsBySources.body);
+
     const requestValidations = {
       validateRequestParameters:
         argsBySources.query !== undefined || argsBySources.path !== undefined,
-      validateRequestBody: argsBySources.body !== undefined,
+      validateRequestBody:
+        argsBySources.body !== undefined && Boolean(bodySchema?.required),
     };
     const requestParameters: Record<string, boolean> = {
       ...this.mapUrlParameters('querystring', argsBySources.query),
       ...this.mapUrlParameters('path', argsBySources.path),
     };
-
-    const bodySchema = this.getBodySchema(argsBySources.body);
 
     return {
       bodySchema,
@@ -195,13 +233,14 @@ export class ApiResource extends CommonResource {
 
     for (const field of fields) {
       properties[field.field] = {
-        type: schemaTypeMap[field.type],
+        type: schemaTypeMap[field.type] || JsonSchemaType.OBJECT,
       };
       field.required && required.push(field.field);
     }
 
     return {
       properties,
+      required: required.length > 0 ? required : undefined,
       type: JsonSchemaType.OBJECT,
     };
   }
@@ -217,9 +256,11 @@ export class ApiResource extends CommonResource {
       variables.push(
         `#set($${field.field} = ${requestTemplateMap[field.source](field.field)})`
       );
-      let jsonField = `"${field.destinationField}": $${field.field},`;
+      // TODO: verify array and map list
+      const fieldValue = `$${field.field}`;
+      let jsonField = `"${field.destinationField}": ${fieldValue},`;
       if (!field.required) {
-        jsonField = `#if($${field.field}) ${jsonField} #end`;
+        jsonField = `#if($${field.field} && $${field.field}.length() > 0) ${jsonField} #end`;
       }
       keyValues.push(jsonField);
     }
@@ -257,8 +298,8 @@ export class ApiResource extends CommonResource {
         principalApiResource = this.apiResources[path];
         continue;
       }
-
       this.apiResources[path] = principalApiResource.addResource(resourceUrl);
+      principalApiResource = this.apiResources[path];
     }
 
     return this.apiResources[fullPath];

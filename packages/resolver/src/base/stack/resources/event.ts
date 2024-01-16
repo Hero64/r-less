@@ -1,12 +1,10 @@
 import 'reflect-metadata';
-import { Duration, NestedStack } from 'aws-cdk-lib';
+import { Duration } from 'aws-cdk-lib';
 import { CronOptions, EventBus, Rule, RuleProps, Schedule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction as LambdaFunctionTarget } from 'aws-cdk-lib/aws-events-targets';
-import { Role } from 'aws-cdk-lib/aws-iam';
-import { LayerVersion } from 'aws-cdk-lib/aws-lambda';
 
 import { Resource } from '../stack';
-import { CommonResource } from './common';
+import { CommonResource, CommonResourceProps } from './common';
 import {
   EventCronMetadata,
   EventRuleMetadata,
@@ -14,13 +12,8 @@ import {
   ResourceMetadata,
 } from '../../../../../main/lib';
 
-interface EventResourceProps {
-  scope: NestedStack;
-  resource: Resource;
-  stackName: string;
+interface EventResourceProps extends CommonResourceProps {
   metadata: ResourceMetadata;
-  role: Role;
-  layer?: LayerVersion;
 }
 
 export class EventResource extends CommonResource {

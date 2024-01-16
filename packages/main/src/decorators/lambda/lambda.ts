@@ -59,7 +59,14 @@ const reflectArgumentMethod = (
 };
 
 export const createLambdaDecorator =
-  <T, M>(getLambdaMetadata: (params: T, methodName: string) => M) =>
+  <T, M>(
+    getLambdaMetadata: (params: T, methodName: string) => M,
+    responseParser?: (
+      callback: (error: any, response: any) => void,
+      response: any,
+      isError?: boolean
+    ) => any
+  ) =>
   (props?: T) =>
   (target: any, methodName: string, descriptor: PropertyDescriptor) => {
     const handlersMetadata: M[] =
@@ -83,9 +90,20 @@ export const createLambdaDecorator =
         const methodArguments = (lambdaArguments?.[methodName] || []).map(
           (argumentType) => argumentsByType[argumentType]({ event, callback })
         );
-        callback(null, await originalValue.apply(this, methodArguments));
+        const response = await originalValue.apply(this, methodArguments);
+
+        if (responseParser) {
+          responseParser(callback, response);
+          return;
+        }
+
+        callback(null, response);
       } catch (e) {
         if (e instanceof Error) {
+          if (responseParser) {
+            responseParser(callback, e.message, true);
+            return;
+          }
           callback(e.message);
         }
       }

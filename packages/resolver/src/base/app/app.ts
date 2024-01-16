@@ -1,5 +1,5 @@
 import { App, NestedStack, Stack } from 'aws-cdk-lib';
-import { RestApi, RestApiProps } from 'aws-cdk-lib/aws-apigateway';
+import { IResource, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Role } from 'aws-cdk-lib/aws-iam';
 import { Code, LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { cwd } from 'node:process';
@@ -12,13 +12,9 @@ import {
 } from '@really-less/main';
 import { createRole } from '../role/role';
 import { join } from 'node:path';
+import { ApiProps } from '../stack/resources/api';
 
 export type Environment = Record<string, number | string>;
-
-export interface ApiGatewayGlobalProps {
-  name: string;
-  props?: RestApiProps;
-}
 
 export interface LambdaGlobalProps {
   environment?: Environment;
@@ -33,7 +29,7 @@ export interface GlobalConfig {
   /**
    * Api gateway config by all api resource
    */
-  apiGateway?: ApiGatewayGlobalProps;
+  apiGateway?: ApiProps;
   /**
    * Lambda config
    */
@@ -43,6 +39,7 @@ export interface GlobalConfig {
 export interface AppResources {
   stack: Stack;
   role: Role;
+  apiResources: Record<string, IResource>;
   layer?: LayerVersion;
   api?: RestApi;
 }
@@ -60,8 +57,13 @@ class AppStack extends Stack {
     const { stacks, name, global } = props;
     super(scope, name, {});
     let globalRestApi: RestApi | undefined = undefined;
+
     if (global?.apiGateway) {
-      globalRestApi = new RestApi(scope, global.apiGateway.name, global.apiGateway.props);
+      globalRestApi = new RestApi(
+        scope,
+        global.apiGateway.name || `${name}-global-api`,
+        global.apiGateway.options
+      );
     }
 
     const appRole = createRole({
@@ -83,7 +85,6 @@ class AppStack extends Stack {
     let appLayer: LayerVersion | undefined = undefined;
 
     const layerPath = join(cwd(), '.resources/layers');
-    console.log(layerPath);
 
     if (existsSync(layerPath)) {
       appLayer = new LayerVersion(this, 'app-layer', {
@@ -97,6 +98,7 @@ class AppStack extends Stack {
         api: globalRestApi,
         role: appRole,
         layer: appLayer,
+        apiResources: {},
       });
     }
   }

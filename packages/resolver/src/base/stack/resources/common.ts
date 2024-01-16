@@ -8,6 +8,15 @@ import {
 import { LambdaMetadata } from '../../../../../main/lib';
 import { Role } from 'aws-cdk-lib/aws-iam';
 import { createRole } from '../../role/role';
+import { Resource } from '../stack';
+
+export interface CommonResourceProps {
+  scope: NestedStack;
+  stackName: string;
+  role: Role;
+  resource: Resource;
+  layer?: LayerVersion;
+}
 
 export const NodeRuntime = {
   16: Runtime.NODEJS_16_X,
@@ -42,7 +51,7 @@ export class CommonResource {
     prefix = '',
     excludeFiles = [],
   }: CreateLambdaProps) {
-    const lambdaName = `${prefix}-${handler.name}`;
+    const lambdaName = `${prefix}_${handler.name}`;
 
     const lambdaRole = handler?.lambda?.services
       ? createRole({
