@@ -1,7 +1,7 @@
-import { ApiField } from '@really-less/main';
+import { Param } from '@really-less/api';
 
 export class GreetingFieldBase {
-  @ApiField({
+  @Param({
     required: true,
     source: 'path',
   })
@@ -9,15 +9,14 @@ export class GreetingFieldBase {
 }
 
 export class GreetingField extends GreetingFieldBase {
-  @ApiField({
-    field: 'name',
+  @Param({
     required: false,
     source: 'body',
   })
   name?: string;
 
-  @ApiField({
-    field: 'lastname',
+  @Param({
+    name: 'lastname',
     required: false,
     source: 'body',
   })

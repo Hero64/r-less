@@ -1,5 +1,5 @@
 {
-  "name": "@really-less/main",
+  "name": "@really-less/api",
   "private": false,
   "version": "1.0.0",
   "main": "lib/index.js",
@@ -10,12 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@really-less/api": "*",
-    "@really-less/common": "*",
-    "@really-less/event": "*",
-    "@really-less/step_function": "*",
-    "aws-cdk-lib": "2.117.0",
-    "constructs": "10.2.61",
+    "@really-less/common": "file:../common",
     "reflect-metadata": "0.1.13"
   },
   "devDependencies": {

@@ -1,4 +1,4 @@
-import { Api, Get, Post, ApiEvent } from '@really-less/main';
+import { Api, Get, Post, Event } from '@really-less/api';
 import { GreetingField } from './greeting.field';
 
 @Api({
@@ -15,7 +15,7 @@ export class GreetingApi {
   @Post({
     path: '/bye',
   })
-  sayBye(@ApiEvent(GreetingField) e: GreetingField) {
+  sayBye(@Event(GreetingField) e: GreetingField) {
     console.log('Bye');
   }
 }

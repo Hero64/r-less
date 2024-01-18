@@ -1,4 +1,4 @@
-import { Event, EventCron, EventRule } from '@really-less/main';
+import { Event, EventCron, EventRule } from '@really-less/event';
 
 @Event()
 export class GreetingEvent {
