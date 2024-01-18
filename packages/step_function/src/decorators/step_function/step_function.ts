@@ -11,6 +11,10 @@ import 'reflect-metadata';
 
 type DefaultMethod = (...args: any) => any;
 
+export enum StepFunctionReflectKeys {
+  FIELD = 'step_function:field',
+}
+
 interface StepFunctionProps<T extends Function, R extends DefaultMethod = any> {
   startAt: InitType<keyof T['prototype'], R>;
 }
