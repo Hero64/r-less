@@ -1,4 +1,5 @@
 import { Param } from '@really-less/api';
+import { Param as SFParam } from '@really-less/step_function';
 
 export class GreetingFieldBase {
   @Param({
@@ -21,4 +22,12 @@ export class GreetingField extends GreetingFieldBase {
     source: 'body',
   })
   lastName?: string;
+}
+
+export class GreetingSFParam {
+  @SFParam({
+    context: 'input',
+    source: 'name',
+  })
+  name: string;
 }

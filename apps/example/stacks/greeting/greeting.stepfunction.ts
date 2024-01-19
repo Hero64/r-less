@@ -1,4 +1,5 @@
-import { StepFunction, Task } from '@really-less/step_function';
+import { Event, StepFunction, Task } from '@really-less/step_function';
+import { GreetingSFParam } from './greeting.field';
 
 @StepFunction({
   startAt: 'sayHello',
@@ -23,8 +24,11 @@ export class GreetingStepFunction {
       ],
     },
   })
-  sayHello() {
+  sayHello(@Event(GreetingSFParam) e: GreetingSFParam) {
+    console.log(e);
+
     return {
+      ...e,
       isInTheMorning: true,
     };
   }
