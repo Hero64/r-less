@@ -179,39 +179,39 @@ export class ApiResource extends CommonResource {
 
   private parseRequestArguments(handler: ApiLambdaMetadata) {
     const params: Record<string, ParamMetadata[]> =
-      Reflect.getMetadata(LambdaReflectKeys, this.resource.prototype) || {};
+      Reflect.getMetadata(LambdaReflectKeys.EVENT_PARAM, this.resource.prototype) || {};
 
-    const argsByMethod = params[handler.name];
+    const paramsByMethod = params[handler.name];
 
-    if (!argsByMethod) {
+    if (!paramsByMethod) {
       return {};
     }
 
-    const argsBySources: Partial<Record<Source, ParamMetadata[]>> = {};
+    const paramsBySource: Partial<Record<Source, ParamMetadata[]>> = {};
 
-    for (const arg of argsByMethod) {
-      argsBySources[arg.source] ??= [];
-      argsBySources[arg.source]?.push(arg);
+    for (const arg of paramsByMethod) {
+      paramsBySource[arg.source] ??= [];
+      paramsBySource[arg.source]?.push(arg);
     }
 
-    const bodySchema = this.getBodySchema(argsBySources.body);
+    const bodySchema = this.getBodySchema(paramsBySource.body);
 
     const requestValidations = {
       validateRequestParameters:
-        argsBySources.query !== undefined || argsBySources.path !== undefined,
+        paramsBySource.query !== undefined || paramsBySource.path !== undefined,
       validateRequestBody:
-        argsBySources.body !== undefined && Boolean(bodySchema?.required),
+        paramsBySource.body !== undefined && Boolean(bodySchema?.required),
     };
     const requestParameters: Record<string, boolean> = {
-      ...this.mapUrlParameters('querystring', argsBySources.query),
-      ...this.mapUrlParameters('path', argsBySources.path),
+      ...this.mapUrlParameters('querystring', paramsBySource.query),
+      ...this.mapUrlParameters('path', paramsBySource.path),
     };
 
     return {
       bodySchema,
       requestParameters,
       requestValidations,
-      requestTemplate: this.generateRequestTemplate(argsByMethod),
+      requestTemplate: this.generateRequestTemplate(paramsByMethod),
     };
   }
 

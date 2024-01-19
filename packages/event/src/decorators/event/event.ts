@@ -43,17 +43,17 @@ export const Event = createResourceDecorator({
   callerFileIndex: 5,
 });
 
-export const EventRule = createLambdaDecorator<EventRuleProps, EventRuleMetadata>(
-  (props, methodName) => ({
+export const EventRule = createLambdaDecorator<EventRuleProps, EventRuleMetadata>({
+  getLambdaMetadata: (props, methodName) => ({
     ...props,
     rule: props.rule || methodName,
     name: methodName,
-  })
-);
+  }),
+});
 
-export const EventCron = createLambdaDecorator<EventCronProps, EventCronMetadata>(
-  (props, methodName) => ({
+export const EventCron = createLambdaDecorator<EventCronProps, EventCronMetadata>({
+  getLambdaMetadata: (props, methodName) => ({
     ...props,
     name: methodName,
-  })
-);
+  }),
+});

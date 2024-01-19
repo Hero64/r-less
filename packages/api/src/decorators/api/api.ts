@@ -49,8 +49,8 @@ export enum ApiReflectKeys {
 }
 
 const createMethodDecorator = (method: Method) =>
-  createLambdaDecorator<ApiLambdaProps, ApiLambdaMetadata>(
-    (params, methodName) => {
+  createLambdaDecorator<ApiLambdaProps, ApiLambdaMetadata>({
+    getLambdaMetadata: (params, methodName) => {
       const { path = '/', lambda } = params;
 
       return {
@@ -60,7 +60,7 @@ const createMethodDecorator = (method: Method) =>
         name: methodName,
       };
     },
-    (callback, response, isError) => {
+    responseParser: (callback, response, isError) => {
       if (isError) {
         const isMessage = typeof response === 'string';
         let selectResponseType = isMessage ? 'ERROR' : 'NOT_FOUND';
@@ -81,8 +81,8 @@ const createMethodDecorator = (method: Method) =>
       }
 
       callback(null, response);
-    }
-  );
+    },
+  });
 
 export const Api = createResourceDecorator<ApiProps>({
   type: ResourceType.API,

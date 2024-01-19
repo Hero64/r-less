@@ -13,6 +13,8 @@ import {
   Parallel,
   Map,
   DefinitionBody,
+  TaskInput,
+  IChainable,
 } from 'aws-cdk-lib/aws-stepfunctions';
 import { LambdaReflectKeys } from '@really-less/common';
 import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks';
@@ -22,6 +24,7 @@ import {
   TaskTypes,
   ValidateValues,
   Validations,
+  ParamMetadata,
 } from '@really-less/step_function';
 
 import { CommonResource, CommonResourceProps } from './common';
@@ -50,7 +53,12 @@ export class StepFunctionResource extends CommonResource {
 
     new StateMachine(this.scope, name, {
       definitionBody: DefinitionBody.fromChainable(
-        this.createStepFunctionTasks(handlers, lambdaTasks, startAt)
+        this.nextTask(
+          handlers,
+          lambdaTasks,
+          typeof startAt === 'string' ? startAt : `start-${name}`,
+          startAt
+        )
       ),
     });
   }
@@ -82,14 +90,54 @@ export class StepFunctionResource extends CommonResource {
     };
   }
 
+  private parseParam = (metadata: ParamMetadata) => {
+    const { context } = metadata;
+
+    if (context === 'custom') {
+      return metadata.value;
+    }
+
+    const contextMap: Partial<Record<ParamMetadata['context'], string>> = {
+      execution: '$$.Execution',
+      input: '$$.Execution.Input',
+      state: '$$.State',
+      state_machine: '$$.StateMachine',
+      payload: '$.payload',
+      map: '$$.Map.Item',
+    };
+
+    return `${contextMap[context]}.${metadata.source as string}`;
+  };
+
+  private createTaskParameters(taskName: string) {
+    const params: Record<string, ParamMetadata[]> =
+      Reflect.getMetadata(LambdaReflectKeys.EVENT_PARAM, this.resource.prototype) || {};
+
+    const paramsByMethod = params[taskName];
+    if (!paramsByMethod) {
+      return undefined;
+    }
+
+    const taskParameters: Record<string, string> = {};
+
+    for (const param of paramsByMethod) {
+      taskParameters[`${param.name}${param.context !== 'custom' ? '.$' : ''}`] =
+        this.parseParam(param);
+    }
+
+    return TaskInput.fromObject(taskParameters);
+  }
+
   private createStepFunctionTasks = (
     handlersMetadata: Record<string, LambdaTaskMetadata>,
     lambdaTasks: Record<string, LambdaFunction>,
     taskName: string
   ) => {
     const taskMetadata = handlersMetadata[taskName];
+
     const task = new LambdaInvoke(this.scope, `task-${taskName}`, {
       lambdaFunction: lambdaTasks[taskName],
+      payload: this.createTaskParameters(taskName),
     });
 
     const nextTask = this.nextTask(
@@ -115,7 +163,7 @@ export class StepFunctionResource extends CommonResource {
     end: boolean = false
   ) => {
     if (!next || end) {
-      return;
+      return null as unknown as IChainable;
     }
 
     if (typeof next === 'string') {

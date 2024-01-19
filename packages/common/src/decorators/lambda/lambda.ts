@@ -37,13 +37,37 @@ export enum LambdaArgumentTypes {
 }
 
 type LambdaArguments = Record<string, LambdaArgumentTypes[]>;
-
-const argumentsByType: Record<
+type LambdaArgumentsType = Record<
   LambdaArgumentTypes,
-  ({ event, callback }: { event: any; callback: any }) => any
-> = {
-  [LambdaArgumentTypes.EVENT]: ({ event }) => event,
-  [LambdaArgumentTypes.CALLBACK]: ({ callback }) => callback,
+  ({
+    event,
+    callback,
+  }: {
+    event: any;
+    callback: any;
+    argumentParser?: Partial<LambdaArgumentsType>;
+  }) => any
+>;
+
+interface CreateLambdaDecoratorProps<T, M> {
+  getLambdaMetadata: (params: T, methodName: string) => M;
+  responseParser?: (
+    callback: (error: any, response: any) => void,
+    response: any,
+    isError?: boolean
+  ) => any;
+  argumentParser?: Partial<LambdaArgumentsType>;
+}
+
+const argumentsByType: LambdaArgumentsType = {
+  [LambdaArgumentTypes.EVENT]: ({ event, callback, argumentParser = {} }) =>
+    argumentParser[LambdaArgumentTypes.EVENT]
+      ? argumentParser[LambdaArgumentTypes.EVENT]({ event, callback })
+      : event,
+  [LambdaArgumentTypes.CALLBACK]: ({ event, callback, argumentParser = {} }) =>
+    argumentParser[LambdaArgumentTypes.CALLBACK]
+      ? argumentParser[LambdaArgumentTypes.CALLBACK]({ event, callback })
+      : callback,
 };
 
 const reflectArgumentMethod = (
@@ -59,14 +83,11 @@ const reflectArgumentMethod = (
 };
 
 export const createLambdaDecorator =
-  <T, M>(
-    getLambdaMetadata: (params: T, methodName: string) => M,
-    responseParser?: (
-      callback: (error: any, response: any) => void,
-      response: any,
-      isError?: boolean
-    ) => any
-  ) =>
+  <T, M>({
+    getLambdaMetadata,
+    responseParser,
+    argumentParser,
+  }: CreateLambdaDecoratorProps<T, M>) =>
   (props?: T) =>
   (target: any, methodName: string, descriptor: PropertyDescriptor) => {
     const handlersMetadata: M[] =
@@ -88,7 +109,8 @@ export const createLambdaDecorator =
     descriptor.value = async (event: any, _context: any, callback: any) => {
       try {
         const methodArguments = (lambdaArguments?.[methodName] || []).map(
-          (argumentType) => argumentsByType[argumentType]({ event, callback })
+          (argumentType) =>
+            argumentsByType[argumentType]({ event, callback, argumentParser })
         );
         const response = await originalValue.apply(this, methodArguments);
 

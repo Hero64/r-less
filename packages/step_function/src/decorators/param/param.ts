@@ -1,3 +1,4 @@
+import { createEventDecorator } from '@really-less/common';
 import { StepFunctionReflectKeys } from '../step_function/step_function';
 
 type ParamContextBase<C, T> = {
@@ -23,7 +24,7 @@ type StateParamContext = ParamContextBase<
 >;
 type StateMachineParamContext = ParamContextBase<'state_machine', 'id' | 'name'>;
 type TaskParamContext = ParamContextBase<'state_machine', 'token'>;
-type DataParamContext = ParamContextBase<'data', string>;
+type PayloadParamContext = ParamContextBase<'payload', string>;
 type MapParamContext = ParamContextBase<'map', 'index' | 'value'>;
 type CustomParamContext = {
   context: 'custom';
@@ -39,11 +40,11 @@ type ParamContext<I> =
   | StateParamContext
   | StateMachineParamContext
   | TaskParamContext
-  | DataParamContext
+  | PayloadParamContext
   | MapParamContext
   | CustomParamContext;
 
-type ParamProps<T> = {
+export type ParamProps<T> = {
   /**
    * Name of property
    *
@@ -52,20 +53,27 @@ type ParamProps<T> = {
   name?: string;
 } & ParamContext<T>;
 
-interface Input {
+export type ParamMetadata<T = any> = {
   name: string;
-}
+  type: string;
+} & ParamProps<T>;
 
-const Parameter =
+export const Event = createEventDecorator((ParamClass) => {
+  return Reflect.getMetadata(StepFunctionReflectKeys.FIELD, ParamClass.prototype);
+});
+
+export const Param =
   <T = any>(props: ParamProps<T>) =>
   (target: any, key: string) => {
-    const metadata: ParamProps<T>[] =
+    const metadata: ParamMetadata<T>[] =
       Reflect.getMetadata(StepFunctionReflectKeys.FIELD, target) || [];
 
     const { name } = props;
+    const type = Reflect.getMetadata('design:type', target, key).name;
 
     metadata.push({
       ...props,
+      type,
       name: name ?? key,
     });
     Reflect.defineMetadata(StepFunctionReflectKeys.FIELD, metadata, target);

@@ -28,8 +28,8 @@ export interface ParamMetadata extends Required<ParamProps> {
   destinationField: string;
   type: string;
 }
-export const Event = createEventDecorator((FieldClass) => {
-  return Reflect.getMetadata(ApiReflectKeys.FIELD, FieldClass.prototype);
+export const Event = createEventDecorator((ParamClass) => {
+  return Reflect.getMetadata(ApiReflectKeys.FIELD, ParamClass.prototype);
 });
 
 export const Param =

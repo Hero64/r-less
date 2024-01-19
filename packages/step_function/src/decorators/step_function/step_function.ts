@@ -6,6 +6,7 @@ import {
   LambdaMetadata,
   LambdaProps,
   createLambdaDecorator,
+  LambdaArgumentTypes,
 } from '@really-less/common';
 import 'reflect-metadata';
 
@@ -15,8 +16,8 @@ export enum StepFunctionReflectKeys {
   FIELD = 'step_function:field',
 }
 
-interface StepFunctionProps<T extends Function, R extends DefaultMethod = any> {
-  startAt: InitType<keyof T['prototype'], R>;
+interface StepFunctionProps<T extends Function> {
+  startAt: InitialTaskType<keyof T['prototype']>;
 }
 
 interface WaitTask<M> {
@@ -169,18 +170,18 @@ interface TaskCatch<M> {
   next?: M | PassTask<M> | SucceedTask | FailTask;
 }
 
-export type InitType<M, R extends DefaultMethod = any> =
+export type InitialTaskType<M, R extends DefaultMethod = any> =
   | M
   | WaitTask<M>
   | ChoiceTask<M, R>
-  | ParallelTask<M>
-  | MapTask<M>;
+  | ParallelTask<M>;
 
 export type TaskTypes<M, R extends DefaultMethod = any> =
   | PassTask<M>
   | FailTask
   | SucceedTask
-  | InitType<M, R>;
+  | MapTask<M>
+  | InitialTaskType<M, R>;
 
 interface TaskProps<M, R extends DefaultMethod> {
   retry?: TaskRetry;
@@ -202,7 +203,7 @@ export interface StepFunctionResourceProps<T extends Function>
     StepFunctionProps<T> {}
 
 export interface StepFunctionResourceMetadata extends ResourceMetadata {
-  startAt: string;
+  startAt: InitialTaskType<string>;
 }
 
 export const StepFunction =
@@ -218,10 +219,13 @@ export const Task =
     props?: LambdaTaskProps<T, T[K]>
   ) =>
   (target: T, methodName: K, descriptor: PropertyDescriptor) => {
-    return createLambdaDecorator<LambdaTaskProps<T, T[K]>, LambdaTaskMetadata<T, T[K]>>(
-      (props) => ({
+    return createLambdaDecorator<LambdaTaskProps<T, T[K]>, LambdaTaskMetadata<T, T[K]>>({
+      getLambdaMetadata: (props) => ({
         ...props,
         name: methodName as string,
-      })
-    )(props)(target, methodName as string, descriptor);
+      }),
+      argumentParser: {
+        [LambdaArgumentTypes.EVENT]: ({ event }) => event.Payload,
+      },
+    })(props)(target, methodName as string, descriptor);
   };

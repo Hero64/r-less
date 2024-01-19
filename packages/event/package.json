@@ -3,6 +3,7 @@
   "private": false,
   "version": "1.0.0",
   "main": "lib/index.js",
+  "types": "src/index",
   "license": "MIT",
   "scripts": {
     "dev": "tsc -w",

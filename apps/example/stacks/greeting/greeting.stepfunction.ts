@@ -2,7 +2,11 @@ import { Event, StepFunction, Task } from '@really-less/step_function';
 import { GreetingSFParam } from './greeting.field';
 
 @StepFunction({
-  startAt: 'sayHello',
+  startAt: {
+    type: 'wait',
+    seconds: 2000,
+    next: 'sayHello',
+  },
 })
 export class GreetingStepFunction {
   @Task({
