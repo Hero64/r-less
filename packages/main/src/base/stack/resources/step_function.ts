@@ -90,25 +90,6 @@ export class StepFunctionResource extends CommonResource {
     };
   }
 
-  private parseParam = (metadata: ParamMetadata) => {
-    const { context } = metadata;
-
-    if (context === 'custom') {
-      return metadata.value;
-    }
-
-    const contextMap: Partial<Record<ParamMetadata['context'], string>> = {
-      execution: '$$.Execution',
-      input: '$$.Execution.Input',
-      state: '$$.State',
-      state_machine: '$$.StateMachine',
-      payload: '$.payload',
-      map: '$$.Map.Item',
-    };
-
-    return `${contextMap[context]}.${metadata.source as string}`;
-  };
-
   private createTaskParameters(taskName: string) {
     const params: Record<string, ParamMetadata[]> =
       Reflect.getMetadata(LambdaReflectKeys.EVENT_PARAM, this.resource.prototype) || {};
@@ -138,6 +119,7 @@ export class StepFunctionResource extends CommonResource {
     const task = new LambdaInvoke(this.scope, `task-${taskName}`, {
       lambdaFunction: lambdaTasks[taskName],
       payload: this.createTaskParameters(taskName),
+      resultPath: '$',
     });
 
     const nextTask = this.nextTask(
@@ -283,6 +265,25 @@ export class StepFunctionResource extends CommonResource {
     return `${typeName}_${name}_${this.taskIterator}`;
   };
 
+  private parseParam = (metadata: ParamMetadata) => {
+    const { context, name } = metadata;
+
+    if (context === 'custom') {
+      return metadata.value;
+    }
+
+    const contextMap: Partial<Record<ParamMetadata['context'], string>> = {
+      execution: '$$.Execution',
+      input: '$$.Execution.Input',
+      state: '$$.State',
+      state_machine: '$$.StateMachine',
+      payload: '$.',
+      map: '$$.Map.Item',
+    };
+
+    return `${contextMap[context]}.${(metadata.source as string) || name}`;
+  };
+
   private parseChoiceTask = (validation: Validations): Condition => {
     if (validation.mode === 'and' || validation.mode === 'or') {
       return Condition[validation.mode](
@@ -297,7 +298,15 @@ export class StepFunctionResource extends CommonResource {
     const validate = validation as ValidateValues;
 
     return (Condition[validate.mode] as Function)(
-      `$.${validate.variable as string}`,
+      this.parseParam(
+        typeof validate.variable === 'string'
+          ? {
+              context: 'payload',
+              source: validate.variable,
+              name: validate.variable,
+            }
+          : (validate.variable as any)
+      ),
       validate.value
     );
   };

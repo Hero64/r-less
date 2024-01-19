@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import {
   ResourceType,
   ResourceProps,
@@ -8,9 +9,19 @@ import {
   createLambdaDecorator,
   LambdaArgumentTypes,
 } from '@really-less/common';
-import 'reflect-metadata';
+import {
+  ExecutionParamContext,
+  InputParamContext,
+  StateParamContext,
+  StateMachineParamContext,
+  TaskParamContext,
+  CustomParamContext,
+} from '../param/param';
 
 type DefaultMethod = (...args: any) => any;
+type ReturnMethodKeyOfOrString<T extends DefaultMethod> = ReturnType<T> extends {}
+  ? keyof ReturnType<T>
+  : string;
 
 export enum StepFunctionReflectKeys {
   FIELD = 'step_function:field',
@@ -29,7 +40,14 @@ interface WaitTask<M> {
 interface ValidateByType<T, V, R extends DefaultMethod = any> {
   mode: T;
   value: V;
-  variable: ReturnType<R> extends {} ? keyof ReturnType<R> : string;
+  variable:
+    | ReturnMethodKeyOfOrString<R>
+    | ExecutionParamContext
+    | InputParamContext
+    | StateParamContext
+    | StateMachineParamContext
+    | TaskParamContext
+    | CustomParamContext;
 }
 
 type ValidateBoolean<R extends DefaultMethod> = ValidateByType<
