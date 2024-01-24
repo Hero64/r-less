@@ -16,6 +16,7 @@ import {
   StateMachineParamContext,
   TaskParamContext,
   CustomParamContext,
+  PayloadParamContext,
 } from '../param/param';
 
 type DefaultMethod = (...args: any) => any;
@@ -180,7 +181,7 @@ interface PassTask<M> {
 
 interface MapTask<M, R extends DefaultMethod = any> {
   type: 'map';
-  itemsPath: ParameterItem<R> | '$';
+  itemsPath: ReturnMethodKeyOfOrString<R> | InputParamContext | PayloadParamContext | '$';
   next?: TaskTypes<M>;
   maxCurrency?: number;
   itemProcessor: { new (...any: []): {} };
@@ -202,13 +203,13 @@ export type InitialTaskType<M, R extends DefaultMethod = any> =
   | M
   | WaitTask<M>
   | ChoiceTask<M, R>
-  | ParallelTask<M>;
+  | ParallelTask<M>
+  | MapTask<M, R>;
 
 export type TaskTypes<M, R extends DefaultMethod = any> =
   | PassTask<M>
   | FailTask
   | SucceedTask
-  | MapTask<M, R>
   | InitialTaskType<M, R>;
 
 interface TaskProps<M, R extends DefaultMethod> {
