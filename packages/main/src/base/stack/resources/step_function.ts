@@ -15,8 +15,10 @@ import {
   DefinitionBody,
   TaskInput,
   IChainable,
+  ProcessorMode,
+  ProcessorType,
 } from 'aws-cdk-lib/aws-stepfunctions';
-import { LambdaReflectKeys } from '@really-less/common';
+import { LambdaReflectKeys, ResourceReflectKeys } from '@really-less/common';
 import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import {
   LambdaTaskMetadata,
@@ -25,6 +27,11 @@ import {
   ValidateValues,
   Validations,
   ParamMetadata,
+  ParameterItem,
+  StepFunctionReflectKeys,
+  StepFunctionMapResourceMetadata,
+  ProcessorMode as SFProcessorMode,
+  ProcessorExecutionType as SFProcessorExecutionType,
 } from '@really-less/step_function';
 
 import { CommonResource, CommonResourceProps } from './common';
@@ -33,6 +40,16 @@ import { Resource } from '../stack';
 interface StepFunctionResourceProps extends CommonResourceProps {
   metadata: StepFunctionResourceMetadata;
 }
+
+const processorMode: Record<SFProcessorMode, ProcessorMode> = {
+  inline: ProcessorMode.INLINE,
+  distributed: ProcessorMode.DISTRIBUTED,
+};
+
+const processorExecutionType: Record<SFProcessorExecutionType, ProcessorType> = {
+  express: ProcessorType.EXPRESS,
+  standard: ProcessorType.STANDARD,
+};
 
 export class StepFunctionResource extends CommonResource {
   private metadata: StepFunctionResourceMetadata;
@@ -49,7 +66,9 @@ export class StepFunctionResource extends CommonResource {
 
   generate() {
     const { startAt, name } = this.metadata;
-    const { lambdas: lambdaTasks, handlers } = this.createLambdaTasks();
+    const { lambdas: lambdaTasks, handlers } = this.createLambdaTasks(
+      this.resource['prototype']
+    );
 
     new StateMachine(this.scope, name, {
       definitionBody: DefinitionBody.fromChainable(
@@ -63,10 +82,10 @@ export class StepFunctionResource extends CommonResource {
     });
   }
 
-  private createLambdaTasks() {
+  private createLambdaTasks(resource: { new (...any: []): {} }) {
     const handlersMetadata: LambdaTaskMetadata[] = Reflect.getMetadata(
       LambdaReflectKeys.HANDLERS,
-      this.resource.prototype
+      resource
     );
     const lambdas: Record<string, LambdaFunction> = {};
     const handlers: Record<string, LambdaTaskMetadata> = {};
@@ -240,23 +259,59 @@ export class StepFunctionResource extends CommonResource {
         callNext(parallelTask, next, next.end);
 
         return parallelTask;
-      case 'map':
-        const mapTask = new Map(this.scope, this.getTaskName('map', originalTaskName), {
+      case 'map': {
+        const mapFlow: StepFunctionMapResourceMetadata = Reflect.getMetadata(
+          ResourceReflectKeys.RESOURCE,
+          next.itemProcessor
+        );
+
+        console.log(mapFlow);
+
+        if (mapFlow.type !== StepFunctionReflectKeys.MAP) {
+          throw new Error('Item preprocessor must be a StepFunctionMap');
+        }
+
+        const mapTaskName = this.getTaskName('map', originalTaskName);
+
+        const mapTask = new Map(this.scope, mapTaskName, {
           maxConcurrency: next.maxCurrency,
-          itemsPath: next.itemsPath,
-          parameters: next.params,
+          itemsPath: this.parseParam(this.convertParameterToMetadata(next.itemsPath)),
+          parameters: {
+            'index.$': this.parseParam({
+              name: 'index',
+              context: 'map',
+              source: 'index',
+            }),
+            'value.$': this.parseParam({
+              name: 'value',
+              context: 'map',
+              source: 'value',
+            }),
+          },
         });
 
-        const iteratorTask = this.nextTask(
-          handlersMetadata,
-          lambdaTasks,
-          originalTaskName,
-          next.iterator
+        const { handlers: mapHandlers, lambdas: mapLambdas } = this.createLambdaTasks(
+          next.itemProcessor['prototype']
         );
-        iteratorTask && mapTask.iterator(iteratorTask);
+
+        const itemProcessorTask = this.nextTask(
+          mapHandlers,
+          mapLambdas,
+          typeof mapFlow.startAt === 'string' ? mapFlow.startAt : `start-${mapTaskName}`,
+          mapFlow.startAt
+        );
+
+        itemProcessorTask &&
+          mapTask.itemProcessor(itemProcessorTask, {
+            mode: mapFlow.mode ? processorMode[mapFlow.mode] : undefined,
+            executionType: mapFlow.executionType
+              ? processorExecutionType[mapFlow.executionType]
+              : undefined,
+          });
 
         callNext(mapTask, next.next);
         return mapTask;
+      }
     }
   };
 
@@ -264,6 +319,18 @@ export class StepFunctionResource extends CommonResource {
     this.taskIterator++;
     return `${typeName}_${name}_${this.taskIterator}`;
   };
+
+  private convertParameterToMetadata(parameter: ParameterItem): ParamMetadata {
+    if (typeof parameter === 'string') {
+      return {
+        context: 'payload',
+        source: parameter,
+        name: parameter,
+      };
+    }
+
+    return parameter as ParamMetadata;
+  }
 
   private parseParam = (metadata: ParamMetadata) => {
     const { context, name } = metadata;
@@ -298,15 +365,7 @@ export class StepFunctionResource extends CommonResource {
     const validate = validation as ValidateValues;
 
     return (Condition[validate.mode] as Function)(
-      this.parseParam(
-        typeof validate.variable === 'string'
-          ? {
-              context: 'payload',
-              source: validate.variable,
-              name: validate.variable,
-            }
-          : (validate.variable as any)
-      ),
+      this.parseParam(this.convertParameterToMetadata(validate.variable)),
       validate.value
     );
   };

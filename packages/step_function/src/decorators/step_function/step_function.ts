@@ -25,10 +25,19 @@ type ReturnMethodKeyOfOrString<T extends DefaultMethod> = ReturnType<T> extends 
 
 export enum StepFunctionReflectKeys {
   FIELD = 'step_function:field',
+  MAP = 'step_function:map',
 }
 
-interface StepFunctionProps<T extends Function> {
-  startAt: InitialTaskType<keyof T['prototype']>;
+interface StepFunctionProps<T> {
+  startAt: InitialTaskType<T>;
+}
+
+export type ProcessorMode = 'inline' | 'distributed';
+export type ProcessorExecutionType = 'standard' | 'express';
+
+export interface StepFunctionMapProps<T> extends StepFunctionProps<T> {
+  executionType?: ProcessorExecutionType;
+  mode?: ProcessorMode;
 }
 
 interface WaitTask<M> {
@@ -37,17 +46,19 @@ interface WaitTask<M> {
   next: TaskTypes<M>;
 }
 
+export type ParameterItem<R extends DefaultMethod = any> =
+  | ReturnMethodKeyOfOrString<R>
+  | ExecutionParamContext
+  | InputParamContext
+  | StateParamContext
+  | StateMachineParamContext
+  | TaskParamContext
+  | CustomParamContext;
+
 interface ValidateByType<T, V, R extends DefaultMethod = any> {
   mode: T;
   value: V;
-  variable:
-    | ReturnMethodKeyOfOrString<R>
-    | ExecutionParamContext
-    | InputParamContext
-    | StateParamContext
-    | StateMachineParamContext
-    | TaskParamContext
-    | CustomParamContext;
+  variable: ParameterItem<R>;
 }
 
 type ValidateBoolean<R extends DefaultMethod> = ValidateByType<
@@ -167,13 +178,12 @@ interface PassTask<M> {
   end?: boolean;
 }
 
-interface MapTask<M> {
+interface MapTask<M, R extends DefaultMethod = any> {
   type: 'map';
-  itemsPath: string;
-  params: Record<string, string>;
-  iterator: TaskTypes<M>;
+  itemsPath: ParameterItem<R> | '$';
   next?: TaskTypes<M>;
   maxCurrency?: number;
+  itemProcessor: { new (...any: []): {} };
 }
 
 interface TaskRetry {
@@ -198,7 +208,7 @@ export type TaskTypes<M, R extends DefaultMethod = any> =
   | PassTask<M>
   | FailTask
   | SucceedTask
-  | MapTask<M>
+  | MapTask<M, R>
   | InitialTaskType<M, R>;
 
 interface TaskProps<M, R extends DefaultMethod> {
@@ -216,18 +226,35 @@ interface LambdaTaskProps<T = {}, R extends DefaultMethod = any>
   extends TaskProps<keyof T, R>,
     Partial<LambdaProps> {}
 
-export interface StepFunctionResourceProps<T extends Function>
+export interface StepFunctionResourceProps<T>
   extends ResourceProps,
     StepFunctionProps<T> {}
+
+export interface StepFunctionMapResourceProps<T>
+  extends ResourceProps,
+    StepFunctionMapProps<T> {}
 
 export interface StepFunctionResourceMetadata extends ResourceMetadata {
   startAt: InitialTaskType<string>;
 }
 
+export interface StepFunctionMapResourceMetadata
+  extends ResourceMetadata,
+    StepFunctionMapProps<any> {}
+
+export const StateFunctionMap =
+  <T extends Function>(props: StepFunctionMapProps<keyof T['prototype']>) =>
+  (constructor: T) => {
+    return createResourceDecorator<StepFunctionMapResourceProps<keyof T['prototype']>>({
+      type: StepFunctionReflectKeys.MAP,
+      callerFileIndex: 6,
+    })(props)(constructor);
+  };
+
 export const StepFunction =
-  <T extends Function>(props: StepFunctionResourceProps<T>) =>
+  <T extends Function>(props: StepFunctionResourceProps<keyof T['prototype']>) =>
   (constructor: T) =>
-    createResourceDecorator<StepFunctionResourceProps<T>>({
+    createResourceDecorator<StepFunctionResourceProps<keyof T['prototype']>>({
       type: ResourceType.STEP_FUNCTION,
       callerFileIndex: 6,
     })(props)(constructor);

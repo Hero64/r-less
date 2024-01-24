@@ -1,5 +1,21 @@
-import { Event, StepFunction, Task } from '@really-less/step_function';
+import { Event, StepFunction, Task, StateFunctionMap } from '@really-less/step_function';
 import { GreetingSFParam } from './greeting.field';
+
+@StateFunctionMap({
+  startAt: 'iterate',
+  mode: 'inline',
+})
+class MapIterator {
+  @Task({
+    next: {
+      type: 'pass',
+      end: true,
+    },
+  })
+  iterate() {
+    console.log('sss');
+  }
+}
 
 @StepFunction({
   startAt: {
@@ -44,8 +60,18 @@ export class GreetingStepFunction {
     console.log('good morning');
   }
 
-  @Task()
+  @Task({
+    next: {
+      type: 'map',
+      itemsPath: 'values',
+      itemProcessor: MapIterator,
+    },
+  })
   sayGoodNight() {
     console.log('good bye');
+
+    return {
+      values: [1, 2, 3, 4],
+    };
   }
 }

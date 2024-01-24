@@ -63,7 +63,7 @@ export type ParamProps<T> = {
 
 export type ParamMetadata<T = any> = {
   name: string;
-  type: string;
+  type?: string;
 } & ParamProps<T>;
 
 export const Event = createEventDecorator((ParamClass) => {

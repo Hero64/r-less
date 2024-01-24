@@ -4,9 +4,9 @@ import { getCallerFileName } from '../../utils/path';
 import { REALLY_LESS_CONTEXT } from '../../constants/env.constants';
 
 export enum ResourceType {
-  API,
-  STEP_FUNCTION,
-  EVENT,
+  API = 'api',
+  STEP_FUNCTION = 'step_function',
+  EVENT = 'event',
 }
 
 export enum ResourceReflectKeys {
@@ -18,13 +18,13 @@ export interface ResourceProps {
 }
 
 export interface ResourceMetadata extends Required<ResourceProps> {
-  type: ResourceType;
+  type: string;
   filename: string;
   foldername: string;
 }
 
 interface ResourceDecoratorProps<T> {
-  type: ResourceType;
+  type: string;
   getMetadata?: (props: T) => T;
   callerFileIndex?: number;
 }
@@ -39,7 +39,6 @@ export const createResourceDecorator =
 
     const { type, callerFileIndex, getMetadata = () => props } = decoratorProps;
     const additionalMetadata = getMetadata(props || ({} as T));
-
     const callerFile = getCallerFileName(callerFileIndex);
     Reflect.defineMetadata(
       ResourceReflectKeys.RESOURCE,
