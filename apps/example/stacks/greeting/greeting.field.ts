@@ -31,3 +31,15 @@ export class GreetingSFParam {
   })
   name: string;
 }
+
+export class IntegrationEvent {
+  @Param({
+    source: 'path',
+  })
+  bucket: string;
+
+  @Param({
+    source: 'path',
+  })
+  key: string;
+}
