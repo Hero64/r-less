@@ -23,26 +23,27 @@ export class ExampleApi {
   }
 }
 ```
+
 Es un poco más complejo que eso, pero crear un ApiGateway que responda una lambda es tan simple como el ejemplo.
 
 # Roadmap
 
 - [ ] Api Gateway
-	- [x] Lambda integration
-	- [ ] Service integration
-	- [ ] Api Grateway configuration
+  - [x] Lambda integration
+  - [ ] Service integration
+  - [ ] Api Grateway configuration
 - [ ] Step Functions
-	- [x] Lambda integration
-	- [ ]  Service integration
-	- [ ] Params resolution
+  - [x] Lambda integration
+  - [ ] Service integration
+  - [ ] Params resolution
 - [x] Event Bridge
-	- [x]  Rule Events
-	- [x] Cron
-- [ ]  Standalone Lambda
+  - [x] Rule Events
+  - [x] Cron
+- [ ] Standalone Lambda
 - [x] CLI
   - [x] Lambda export
   - [x] Project layer generation
-  - [ ] Layer per lambda 
+  - [ ] Layer per lambda
 - [ ] Role resolution
 - [ ] Resource configuration
 - [ ] VPC
