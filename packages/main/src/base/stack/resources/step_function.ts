@@ -265,8 +265,6 @@ export class StepFunctionResource extends CommonResource {
           next.itemProcessor
         );
 
-        console.log(mapFlow);
-
         if (mapFlow.type !== StepFunctionReflectKeys.MAP) {
           throw new Error('Item preprocessor must be a StepFunctionMap');
         }
@@ -275,7 +273,9 @@ export class StepFunctionResource extends CommonResource {
 
         const mapTask = new Map(this.scope, mapTaskName, {
           maxConcurrency: next.maxCurrency,
-          itemsPath: this.parseParam(this.convertParameterToMetadata(next.itemsPath)),
+          itemsPath: this.parseParam(
+            this.convertParameterToMetadata(next.itemsPath as ParameterItem)
+          ),
           parameters: {
             'index.$': this.parseParam({
               name: 'index',

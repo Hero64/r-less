@@ -12,7 +12,7 @@ import {
 } from '@really-less/common';
 import { createRole } from '../role/role';
 import { join } from 'node:path';
-import { ApiProps } from '../stack/resources/api';
+import { ApiProps } from '../stack/resources/api/api';
 
 export type Environment = Record<string, number | string>;
 
@@ -46,42 +46,69 @@ export interface AppResources {
 
 export interface CreateAppProps {
   name: string;
-  stacks: ((appResources: AppResources) => NestedStack)[];
+  stacks: ((appResources: AppResources) => Promise<void>)[];
   global?: GlobalConfig;
 }
 
 process.env[REALLY_LESS_CONTEXT] = REALLY_LESS_CONTEXT_VALUE;
 
+const defaultServices: ServicesValues[] = [
+  'dynamodb',
+  's3',
+  'lambda',
+  'cloudwatch',
+  'sqs',
+  'step_function',
+  'kms',
+  'ssm',
+  'event',
+];
+
 class AppStack extends Stack {
-  constructor(scope: App, props: CreateAppProps) {
-    const { stacks, name, global } = props;
+  constructor(private scope: App, private props: CreateAppProps) {
+    const { name } = props;
     super(scope, name, {});
-    let globalRestApi: RestApi | undefined = undefined;
+  }
 
-    if (global?.apiGateway) {
-      globalRestApi = new RestApi(
-        scope,
-        global.apiGateway.name || `${name}-global-api`,
-        global.apiGateway.options
-      );
+  async init() {
+    const { stacks } = this.props;
+
+    for (let stack of stacks) {
+      await stack({
+        stack: this,
+        api: this.createDefaultApiGateway(),
+        role: this.createDefaultRole(),
+        layer: this.createLambdaLayer(),
+        apiResources: {},
+      });
     }
+  }
 
-    const appRole = createRole({
+  private createDefaultRole() {
+    const { global } = this.props;
+
+    return createRole({
       scope: this,
-      services: global?.lambda?.services || [
-        'dynamodb',
-        's3',
-        'lambda',
-        'cloudwatch',
-        'sqs',
-        'step_function',
-        'kms',
-        'ssm',
-        'event',
-      ],
+      services: global?.lambda?.services || defaultServices,
       name: 'app-rol',
     });
+  }
 
+  private createDefaultApiGateway() {
+    const { global } = this.props;
+
+    if (!global?.apiGateway) {
+      return;
+    }
+
+    return new RestApi(
+      this.scope,
+      global.apiGateway.name || `${name}-global-api`,
+      global.apiGateway.options
+    );
+  }
+
+  private createLambdaLayer() {
     let appLayer: LayerVersion | undefined = undefined;
 
     const layerPath = join(cwd(), '.resources/layers');
@@ -92,19 +119,12 @@ class AppStack extends Stack {
       });
     }
 
-    for (let stack of stacks) {
-      stack({
-        stack: this,
-        api: globalRestApi,
-        role: appRole,
-        layer: appLayer,
-        apiResources: {},
-      });
-    }
+    return appLayer;
   }
 }
 
-export const createApp = (props: CreateAppProps) => {
+export const createApp = async (props: CreateAppProps) => {
   const app = new App();
-  return new AppStack(app, props);
+  const appStack = new AppStack(app, props);
+  await appStack.init();
 };

@@ -13,6 +13,7 @@ export interface ApiLambdaProps {
   path?: string;
   lambda?: LambdaProps;
   error?: string;
+  integration?: boolean;
 }
 
 export interface ApiProps extends ResourceProps {
@@ -25,6 +26,7 @@ export interface ApiLambdaMetadata extends LambdaMetadata {
   path: string;
   method: Method;
   name: string;
+  integration: boolean;
   lambda?: LambdaProps;
 }
 
@@ -51,12 +53,13 @@ export enum ApiReflectKeys {
 const createMethodDecorator = (method: Method) =>
   createLambdaDecorator<ApiLambdaProps, ApiLambdaMetadata>({
     getLambdaMetadata: (params, methodName) => {
-      const { path = '/', lambda } = params;
+      const { lambda, path = '/', integration = false } = params;
 
       return {
         lambda,
         method,
         path,
+        integration,
         name: methodName,
       };
     },

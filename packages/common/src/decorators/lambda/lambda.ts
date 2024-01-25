@@ -49,13 +49,15 @@ type LambdaArgumentsType = Record<
   }) => any
 >;
 
+type ResponseParser = (
+  callback: (error: any, response: any) => void,
+  response: any,
+  isError?: boolean
+) => any;
+
 interface CreateLambdaDecoratorProps<T, M> {
   getLambdaMetadata: (params: T, methodName: string) => M;
-  responseParser?: (
-    callback: (error: any, response: any) => void,
-    response: any,
-    isError?: boolean
-  ) => any;
+  responseParser?: ResponseParser;
   argumentParser?: Partial<LambdaArgumentsType>;
 }
 
@@ -80,6 +82,24 @@ const reflectArgumentMethod = (
 
   properties[methodName] = [...(properties[methodName] || []), type];
   Reflect.defineMetadata(LambdaReflectKeys.ARGUMENTS, properties, target);
+};
+
+const responseLambda = (
+  response: any,
+  callback?: any,
+  parser?: ResponseParser,
+  isError: boolean = false
+) => {
+  if (parser && callback) {
+    parser(callback, response, isError);
+    return;
+  }
+
+  if (callback) {
+    isError ? callback(response) : callback(null, response);
+  } else {
+    return response;
+  }
 };
 
 export const createLambdaDecorator =
@@ -113,20 +133,10 @@ export const createLambdaDecorator =
             argumentsByType[argumentType]({ event, callback, argumentParser })
         );
         const response = await originalValue.apply(this, methodArguments);
-
-        if (responseParser) {
-          responseParser(callback, response);
-          return;
-        }
-
-        callback(null, response);
+        return responseLambda(response, callback, responseParser);
       } catch (e) {
         if (e instanceof Error) {
-          if (responseParser) {
-            responseParser(callback, e.message, true);
-            return;
-          }
-          callback(e.message);
+          return responseLambda(e.message, callback, responseParser, true);
         }
       }
     };
