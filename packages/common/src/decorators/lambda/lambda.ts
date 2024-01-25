@@ -161,6 +161,7 @@ export const createEventDecorator =
     reflectArgumentMethod(target, methodName, LambdaArgumentTypes.EVENT);
   };
 
-export const Callback = () => (target: any, methodName: string, _number: number) => {
+export const Callback= () => (target: any, methodName: string,
+  _number: number) => {
   reflectArgumentMethod(target, methodName, LambdaArgumentTypes.CALLBACK);
 };
