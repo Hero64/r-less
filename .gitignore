@@ -39,3 +39,6 @@ cdk.out
 
 #docker
 volume
+
+#editor
+.vscode
