@@ -1,0 +1,83 @@
+import 'reflect-metadata';
+
+export enum CognitoReflectKeys {
+  CUSTOM = 'cognito:custom-attribute',
+  STANDARD = 'cognito:standard-attribute',
+}
+
+interface CommonCustomAttribute {
+  mutable?: boolean;
+}
+
+interface CommonStandardAttribute extends CommonCustomAttribute {
+  required?: boolean;
+}
+
+interface NumberCustomAttribute extends CommonCustomAttribute {
+  min?: number;
+  max?: number;
+}
+
+interface StringCustomAttribute extends CommonCustomAttribute {
+  minLen?: number;
+  maxLen?: number;
+}
+
+type CustomAttributeProps<T> = T extends Number
+  ? NumberCustomAttribute
+  : T extends string
+  ? StringCustomAttribute
+  : CommonCustomAttribute;
+
+export const CustomAttribute =
+  <T extends Record<A, number | string | boolean | Date>, A extends keyof T>(
+    props: CustomAttributeProps<T[A]> = {} as CustomAttributeProps<T[A]>
+  ) =>
+  (target: T, propertyKey: A) => {
+    const properties: Record<keyof T, CustomAttributeProps<T[A]>> = Reflect.getMetadata(
+      CognitoReflectKeys.CUSTOM,
+      target
+    ) || {};
+
+    properties[propertyKey] = props;
+    Reflect.defineMetadata(propertyKey, properties, target);
+  };
+
+export const StandardAttribute =
+  (props: CommonStandardAttribute = {}) =>
+  (target: any, propertyKey: string) => {
+    const properties: Record<string, CommonStandardAttribute> =
+      Reflect.getMetadata(CognitoReflectKeys.STANDARD, target) || {};
+
+    properties[propertyKey] = props;
+    Reflect.defineMetadata(propertyKey, properties, target);
+  };
+
+interface AuthAttributes {
+  email?: string;
+  /**
+   * fullName {string} attribute mapping to fullname
+   */
+  fullName?: string;
+  nickname?: string;
+  birthday?: Date;
+  /**
+   * lastName {string} attribute mapping to familyName
+   */
+  lastName?: string;
+  gender?: string;
+  /**
+   * firstName {string} attribute mapping to giveName
+   */
+  firstName?: string;
+  lastUpdateTime?: Date;
+  locale?: string;
+  middleName?: string;
+  phoneNumber?: string;
+  /**
+   * picture {string} attribute mapping to profilePicture
+   */
+  picture?: string;
+
+  website?: string;
+}
