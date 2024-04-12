@@ -1,3 +1,11 @@
+import { REALLY_LESS_CONTEXT } from '@really-less/common';
+import { getCallerFileName } from '@really-less/common/src/utils/path';
+import { basename, dirname } from 'node:path';
+
+export enum CognitoReflectKeys {
+  PROPERTIES = 'cognito:properties',
+}
+
 type SignInAliases = 'email' | 'phone' | 'username';
 
 interface PasswordPolicy {
@@ -19,8 +27,12 @@ export interface AuthorizerProps {
   passwordPolicy?: PasswordPolicy;
 }
 
+export interface AuthorizerMetadata extends AuthorizerProps {
+  filename: string;
+  foldername: string;
+}
+
 export interface CognitoAuthorizer {
-  preConfirmation?: () => any;
   preAuthentication?: () => any;
   preSignUp?: () => any;
   preTokenGeneration?: () => any;
@@ -28,3 +40,21 @@ export interface CognitoAuthorizer {
   postConfirmation?: () => any;
   authorizer?: () => any;
 }
+
+export const Auth = (props?: AuthorizerProps) => (constructor: Function) => {
+  if (!process.env[REALLY_LESS_CONTEXT]) {
+    return;
+  }
+
+  const callerFile = getCallerFileName(5);
+  Reflect.defineMetadata(
+    CognitoReflectKeys.PROPERTIES,
+    {
+      ...props,
+      name: props?.name || constructor.name,
+      foldername: dirname(callerFile),
+      filename: basename(callerFile).replace('.js', ''),
+    },
+    constructor
+  );
+};

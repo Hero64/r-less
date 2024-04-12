@@ -7,6 +7,7 @@ export enum ResourceType {
   API = 'api',
   STEP_FUNCTION = 'step_function',
   EVENT = 'event',
+  AUTH = 'auth',
 }
 
 export enum ResourceReflectKeys {
@@ -25,8 +26,8 @@ export interface ResourceMetadata extends Required<ResourceProps> {
 
 interface ResourceDecoratorProps<T> {
   type: string;
-  getMetadata?: (props: T) => T;
   callerFileIndex?: number;
+  getMetadata?: (props: T) => T;
 }
 
 export const createResourceDecorator =

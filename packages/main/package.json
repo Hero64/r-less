@@ -15,6 +15,7 @@
     "@really-less/common": "*",
     "@really-less/event": "*",
     "@really-less/step_function": "*",
+    "@really-less/auth": "*",
     "aws-cdk-lib": "2.117.0",
     "constructs": "10.2.61",
     "reflect-metadata": "0.1.13"

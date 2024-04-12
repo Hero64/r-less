@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-export enum CognitoReflectKeys {
+export enum CognitoPropertyReflectKeys {
   CUSTOM = 'cognito:custom-attribute',
   STANDARD = 'cognito:standard-attribute',
 }
@@ -9,51 +9,21 @@ interface CommonCustomAttribute {
   mutable?: boolean;
 }
 
-interface CommonStandardAttribute extends CommonCustomAttribute {
+export interface CommonStandardAttribute extends CommonCustomAttribute {
   required?: boolean;
 }
 
-interface NumberCustomAttribute extends CommonCustomAttribute {
+export interface NumberCustomAttribute extends CommonCustomAttribute {
   min?: number;
   max?: number;
 }
 
-interface StringCustomAttribute extends CommonCustomAttribute {
+export interface StringCustomAttribute extends CommonCustomAttribute {
   minLen?: number;
   maxLen?: number;
 }
 
-type CustomAttributeProps<T> = T extends Number
-  ? NumberCustomAttribute
-  : T extends string
-  ? StringCustomAttribute
-  : CommonCustomAttribute;
-
-export const CustomAttribute =
-  <T extends Record<A, number | string | boolean | Date>, A extends keyof T>(
-    props: CustomAttributeProps<T[A]> = {} as CustomAttributeProps<T[A]>
-  ) =>
-  (target: T, propertyKey: A) => {
-    const properties: Record<keyof T, CustomAttributeProps<T[A]>> = Reflect.getMetadata(
-      CognitoReflectKeys.CUSTOM,
-      target
-    ) || {};
-
-    properties[propertyKey] = props;
-    Reflect.defineMetadata(propertyKey, properties, target);
-  };
-
-export const StandardAttribute =
-  (props: CommonStandardAttribute = {}) =>
-  (target: any, propertyKey: string) => {
-    const properties: Record<string, CommonStandardAttribute> =
-      Reflect.getMetadata(CognitoReflectKeys.STANDARD, target) || {};
-
-    properties[propertyKey] = props;
-    Reflect.defineMetadata(propertyKey, properties, target);
-  };
-
-interface AuthAttributes {
+export interface AuthAttributes {
   email?: string;
   /**
    * fullName {string} attribute mapping to fullname
@@ -81,3 +51,36 @@ interface AuthAttributes {
 
   website?: string;
 }
+
+export type CustomAttributeProps<T> = T extends Number
+  ? NumberCustomAttribute
+  : T extends string
+  ? StringCustomAttribute
+  : CommonCustomAttribute;
+
+export const CustomAttribute =
+  <T extends Record<A, number | string | boolean | Date>, A extends keyof T>(
+    props: CustomAttributeProps<T[A]> = {} as CustomAttributeProps<T[A]>
+  ) =>
+  (target: T, propertyKey: A) => {
+    const properties: Record<keyof T, CustomAttributeProps<T[A]>> = Reflect.getMetadata(
+      CognitoPropertyReflectKeys.CUSTOM,
+      target
+    ) || {};
+
+    properties[propertyKey] = {
+      ...props,
+      name: propertyKey as string,
+    };
+    Reflect.defineMetadata(propertyKey, properties, target);
+  };
+
+export const StandardAttribute =
+  (props: CommonStandardAttribute = {}) =>
+  (target: any, propertyKey: keyof AuthAttributes) => {
+    const properties: Record<keyof AuthAttributes, CommonStandardAttribute> =
+      Reflect.getMetadata(CognitoPropertyReflectKeys.STANDARD, target) || {};
+
+    properties[propertyKey] = props;
+    Reflect.defineMetadata(propertyKey, properties, target);
+  };
