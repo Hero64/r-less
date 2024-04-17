@@ -61,18 +61,18 @@ interface ValidateByTypeWithoutValue<T, R extends DefaultMethod = any> {
   variable: ParameterItem<R>;
 }
 
-interface ValidateByType<T, V, R extends DefaultMethod = any>
+export interface ValidateByType<T, V, R extends DefaultMethod = any>
   extends ValidateByTypeWithoutValue<T, R> {
   value: V;
 }
 
-type ValidateBoolean<R extends DefaultMethod> = ValidateByType<
+export type ValidateBoolean<R extends DefaultMethod> = ValidateByType<
   'booleanEquals',
   boolean,
   R
 >;
 
-type ValidateString<R extends DefaultMethod> = ValidateByType<
+export type ValidateString<R extends DefaultMethod> = ValidateByType<
   | 'booleanEquals'
   | 'booleanEqualsJsonPath'
   | 'stringEqualsJsonPath'
@@ -105,7 +105,7 @@ type ValidateString<R extends DefaultMethod> = ValidateByType<
   R
 >;
 
-type ValidateNumber<R extends DefaultMethod> = ValidateByType<
+export type ValidateNumber<R extends DefaultMethod> = ValidateByType<
   | 'numberEquals'
   | 'numberLessThan'
   | 'numberLessThanEquals'
@@ -115,7 +115,7 @@ type ValidateNumber<R extends DefaultMethod> = ValidateByType<
   R
 >;
 
-type ValidateIs<R extends DefaultMethod> = ValidateByTypeWithoutValue<
+export type ValidateIs<R extends DefaultMethod> = ValidateByTypeWithoutValue<
   | 'isPresent'
   | 'isNotPresent'
   | 'isString'

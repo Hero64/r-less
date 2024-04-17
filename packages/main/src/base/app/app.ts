@@ -1,4 +1,4 @@
-import { App, NestedStack, Stack } from 'aws-cdk-lib';
+import { App, Stack } from 'aws-cdk-lib';
 import { IResource, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Role } from 'aws-cdk-lib/aws-iam';
 import { Code, LayerVersion } from 'aws-cdk-lib/aws-lambda';
@@ -13,6 +13,7 @@ import {
 import { createRole } from '../role/role';
 import { join } from 'node:path';
 import { ApiProps } from '../stack/resources/api/api';
+import { appManager } from '../../utils/manager';
 
 export type Environment = Record<string, number | string>;
 
@@ -46,7 +47,7 @@ export interface AppResources {
 
 export interface CreateAppProps {
   name: string;
-  stacks: ((appResources: AppResources) => Promise<void>)[];
+  stacks: (() => Promise<void>)[];
   global?: GlobalConfig;
 }
 
@@ -73,14 +74,16 @@ class AppStack extends Stack {
   async init() {
     const { stacks } = this.props;
 
+    appManager.setAppResources({
+      stack: this,
+      role: this.createDefaultRole(),
+      api: this.createDefaultApiGateway(),
+      layer: this.createLambdaLayer(),
+      apiResources: {},
+    });
+
     for (let stack of stacks) {
-      await stack({
-        stack: this,
-        api: this.createDefaultApiGateway(),
-        role: this.createDefaultRole(),
-        layer: this.createLambdaLayer(),
-        apiResources: {},
-      });
+      await stack();
     }
   }
 
@@ -90,7 +93,7 @@ class AppStack extends Stack {
     return createRole({
       scope: this,
       services: global?.lambda?.services || defaultServices,
-      name: 'app-rol',
+      name: 'app-role',
     });
   }
 
@@ -103,7 +106,7 @@ class AppStack extends Stack {
 
     return new RestApi(
       this.scope,
-      global.apiGateway.name || `${name}-global-api`,
+      global.apiGateway.name || `${this.props.name}-global-api`,
       global.apiGateway.options
     );
   }

@@ -1,2 +1,2 @@
-export * from './step_function/step_function';
+export * from './step-function/step-function';
 export * from './param/param';

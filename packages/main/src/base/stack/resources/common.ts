@@ -1,22 +1,15 @@
 import { Duration, NestedStack } from 'aws-cdk-lib';
-import {
-  Code,
-  Function as LambdaFunction,
-  LayerVersion,
-  Runtime,
-} from 'aws-cdk-lib/aws-lambda';
+import { Code, Function as LambdaFunction, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { LambdaMetadata } from '@really-less/common';
-import { Role } from 'aws-cdk-lib/aws-iam';
 
 import { createRole } from '../../role/role';
 import { Resource } from '../stack';
+import { appManager } from '../../../utils/manager';
 
 export interface CommonResourceProps {
   scope: NestedStack;
   stackName: string;
-  role: Role;
   resource: Resource;
-  layer?: LayerVersion;
 }
 
 export const NodeRuntime = {
@@ -31,27 +24,20 @@ interface CreateLambdaProps {
   handler: LambdaMetadata;
   prefix?: string;
   excludeFiles?: string[];
-  role?: Role;
-  layer?: LayerVersion;
 }
 
 export class CommonResource {
-  constructor(
-    protected scope: NestedStack,
-    protected stackName: string,
-    protected role: Role,
-    protected layer?: LayerVersion
-  ) {}
+  constructor(protected scope: NestedStack, protected stackName: string) {}
 
   protected createLambda({
     pathName,
     filename,
     handler,
-    role,
-    layer,
     prefix = '',
     excludeFiles = [],
   }: CreateLambdaProps) {
+    const { layer } = appManager.global;
+    const { role } = appManager.resources[this.stackName];
     const lambdaName = `${prefix}_${handler.name}`;
 
     const lambdaRole = handler?.lambda?.services

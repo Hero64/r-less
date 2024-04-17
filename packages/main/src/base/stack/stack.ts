@@ -1,5 +1,4 @@
 import { NestedStack } from 'aws-cdk-lib';
-import { IResource, RestApi } from 'aws-cdk-lib/aws-apigateway';
 
 import {
   ResourceMetadata,
@@ -10,12 +9,12 @@ import {
 import { ApiResourceMetadata } from '@really-less/api';
 import { StepFunctionResourceMetadata } from '@really-less/step_function';
 
-import { AppResources } from '../app/app';
 import { ApiProps, ApiResource } from './resources/api/api';
-import { StepFunctionResource } from './resources/step_function';
+import { StepFunctionResource } from './resources/step-function';
 import { EventResource } from './resources/event';
 import { createRole } from '../role/role';
 import { CommonResourceProps } from './resources/common';
+import { appManager } from '../../utils/manager';
 
 interface StackConfig {
   apiGateway?: ApiProps;
@@ -32,25 +31,21 @@ export interface Resource {
 }
 
 export class AppNestedStack extends NestedStack {
-  private api?: RestApi;
-  private apiResources?: Record<string, IResource>;
-
-  constructor(private props: CreateStackProps, private appResources: AppResources) {
+  constructor(private props: CreateStackProps) {
     const { name } = props;
-    const { stack } = appResources;
+    const { stack } = appManager.global;
+
     super(stack, name, {});
   }
 
   async generateResources() {
     const { apiGateway, name, resources } = this.props;
-    const { apiResources, api, layer } = this.appResources;
-
-    const isNewApiGateway = Boolean(apiGateway?.name);
-
-    this.api = isNewApiGateway ? undefined : api;
-    this.apiResources = isNewApiGateway ? {} : apiResources;
 
     const role = this.createResourceRole();
+    appManager.upsertResource(name, {
+      role,
+      apiResources: {},
+    });
 
     for (const resource of resources) {
       const resourceMetadata: ResourceMetadata = Reflect.getMetadata(
@@ -59,8 +54,6 @@ export class AppNestedStack extends NestedStack {
       );
 
       const commonOptions: CommonResourceProps = {
-        role,
-        layer,
         resource,
         scope: this,
         stackName: name,
@@ -70,13 +63,11 @@ export class AppNestedStack extends NestedStack {
         case ResourceType.API: {
           const apiResource = new ApiResource({
             ...commonOptions,
-            api: this.api,
             apiProps: apiGateway,
             apiMetadata: resourceMetadata as ApiResourceMetadata,
-            apiResources: this.apiResources,
           });
 
-          this.api = await apiResource.generate();
+          await apiResource.generate();
           break;
         }
         case ResourceType.STEP_FUNCTION: {
@@ -102,7 +93,7 @@ export class AppNestedStack extends NestedStack {
   }
 
   private createResourceRole() {
-    const { role, stack } = this.appResources;
+    const { role, stack } = appManager.global;
     const { name, services } = this.props;
     let resourceRole = role;
 
@@ -118,7 +109,7 @@ export class AppNestedStack extends NestedStack {
   }
 }
 
-export const createStack = (props: CreateStackProps) => (appResources: AppResources) => {
-  const appNestedStack = new AppNestedStack(props, appResources);
+export const createStack = (props: CreateStackProps) => () => {
+  const appNestedStack = new AppNestedStack(props);
   return appNestedStack.generateResources();
 };

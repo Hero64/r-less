@@ -6,7 +6,6 @@ import {
   IntegrationResponse,
 } from '@really-less/api';
 import {
-  RestApi,
   IResource,
   AwsIntegration,
   PassthroughBehavior,
@@ -19,7 +18,6 @@ interface ApiServiceIntegrationProps {
   handler: ApiLambdaMetadata;
   apiMetadata: ApiResourceMetadata;
   apiResource: IResource;
-  api: RestApi;
   resource: Resource;
 }
 
