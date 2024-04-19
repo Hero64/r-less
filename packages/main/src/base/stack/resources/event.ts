@@ -18,8 +18,8 @@ export class EventResource extends CommonResource {
   private bus: EventBus;
 
   constructor(props: EventResourceProps) {
-    const { scope, stackName, resource, metadata, role, layer } = props;
-    super(scope, stackName, role, layer);
+    const { scope, stackName, resource, metadata } = props;
+    super(scope, stackName);
     this.resource = resource;
     this.metadata = metadata;
   }
@@ -37,8 +37,6 @@ export class EventResource extends CommonResource {
         handler,
         prefix: 'event-handler',
         excludeFiles: ['stepfunction', 'api'],
-        role: this.role,
-        layer: this.layer,
       });
 
       let ruleProps: { -readonly [key in keyof RuleProps]: RuleProps[key] } = {

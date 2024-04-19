@@ -1,5 +1,5 @@
 import { createEventDecorator } from '@really-less/common';
-import { StepFunctionReflectKeys } from '../step_function/step_function';
+import { StepFunctionReflectKeys } from '../step-function/step-function';
 
 type ParamContextBase<C, T> = {
   /**

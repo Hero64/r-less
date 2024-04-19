@@ -32,6 +32,7 @@ import {
   StepFunctionMapResourceMetadata,
   ProcessorMode as SFProcessorMode,
   ProcessorExecutionType as SFProcessorExecutionType,
+  ValidateByType,
 } from '@really-less/step_function';
 
 import { CommonResource, CommonResourceProps } from './common';
@@ -57,8 +58,8 @@ export class StepFunctionResource extends CommonResource {
   private taskIterator: number = 0;
 
   constructor(props: StepFunctionResourceProps) {
-    const { scope, stackName, resource, metadata, role, layer } = props;
-    super(scope, stackName, role, layer);
+    const { scope, stackName, resource, metadata } = props;
+    super(scope, stackName);
 
     this.metadata = metadata;
     this.resource = resource;
@@ -98,8 +99,6 @@ export class StepFunctionResource extends CommonResource {
         handler,
         prefix: 'sf-handler',
         excludeFiles: ['api', 'event'],
-        role: this.role,
-        layer: this.layer,
       });
     }
 
@@ -366,7 +365,7 @@ export class StepFunctionResource extends CommonResource {
 
     return (Condition[validate.mode] as Function)(
       this.parseParam(this.convertParameterToMetadata(validate.variable)),
-      validate.value
+      (validate as ValidateByType<any, any>).value
     );
   };
 }

@@ -6,7 +6,7 @@ import {
   RequestValidator,
   IResource,
   LambdaIntegration,
-  RestApi,
+  IRestApi,
 } from 'aws-cdk-lib/aws-apigateway';
 import {
   ApiLambdaMetadata,
@@ -19,12 +19,12 @@ import { LambdaReflectKeys } from '@really-less/common';
 
 import { Resource } from '../../stack';
 import { CommonResource, CommonResourceProps } from '../common';
+import { appManager } from '../../../../utils/manager';
 
 interface ApiLambdaIntegrationProps extends CommonResourceProps {
   handler: ApiLambdaMetadata;
   apiMetadata: ApiResourceMetadata;
   apiResource: IResource;
-  api: RestApi;
   resource: Resource;
 }
 
@@ -67,11 +67,12 @@ const defaultResponses = (method: Method): IntegrationResponse[] => [
 
 export class ApiLambdaIntegration extends CommonResource {
   constructor(private props: ApiLambdaIntegrationProps) {
-    super(props.scope, props.stackName, props.role, props.layer);
+    super(props.scope, props.stackName);
   }
 
   create() {
-    const { apiMetadata, handler, apiResource, api, scope } = this.props;
+    const { apiMetadata, handler, apiResource, scope } = this.props;
+    const { api } = appManager.resources[this.stackName];
 
     const lambda = this.createLambda({
       pathName: apiMetadata.foldername,
@@ -79,8 +80,6 @@ export class ApiLambdaIntegration extends CommonResource {
       handler: handler,
       prefix: 'api-handler',
       excludeFiles: ['stepfunction', 'event'],
-      role: this.role,
-      layer: this.layer,
     });
 
     const { bodySchema, requestTemplate, requestParameters, requestValidations } =
@@ -106,7 +105,7 @@ export class ApiLambdaIntegration extends CommonResource {
           requestValidations?.validateRequestBody ||
           requestValidations?.validateRequestParameters
             ? new RequestValidator(this.scope, `${handler.name}-rv`, {
-                restApi: api,
+                restApi: api as IRestApi,
                 requestValidatorName: `validator-${handler.name}`,
                 ...requestValidations,
               })
@@ -114,7 +113,7 @@ export class ApiLambdaIntegration extends CommonResource {
         requestModels: bodySchema
           ? {
               'application/json': new Model(scope, `${handler.name}-request`, {
-                restApi: api,
+                restApi: api as IRestApi,
                 schema: bodySchema,
               }),
             }

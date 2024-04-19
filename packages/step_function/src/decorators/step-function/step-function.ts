@@ -56,18 +56,24 @@ export type ParameterItem<R extends DefaultMethod = any> =
   | TaskParamContext
   | CustomParamContext;
 
-interface ValidateByType<T, V, R extends DefaultMethod = any> {
+interface ValidateByTypeWithoutValue<T, R extends DefaultMethod = any> {
   mode: T;
-  value: V;
   variable: ParameterItem<R>;
 }
 
-type ValidateBoolean<R extends DefaultMethod> = ValidateByType<
+export interface ValidateByType<T, V, R extends DefaultMethod = any>
+  extends ValidateByTypeWithoutValue<T, R> {
+  value: V;
+}
+
+export type ValidateBoolean<R extends DefaultMethod> = ValidateByType<
   'booleanEquals',
   boolean,
   R
 >;
-type ValidateString = ValidateByType<
+
+export type ValidateString<R extends DefaultMethod> = ValidateByType<
+  | 'booleanEquals'
   | 'booleanEqualsJsonPath'
   | 'stringEqualsJsonPath'
   | 'stringEquals'
@@ -95,19 +101,21 @@ type ValidateString = ValidateByType<
   | 'timestampGreaterThanEquals'
   | 'timestampGreaterThanEqualsJsonPath'
   | 'stringMatches',
-  string
+  string,
+  R
 >;
 
-type ValidateNumber = ValidateByType<
+export type ValidateNumber<R extends DefaultMethod> = ValidateByType<
   | 'numberEquals'
   | 'numberLessThan'
   | 'numberLessThanEquals'
   | 'numberGreaterThan'
   | 'numberGreaterThanEquals',
-  number
+  number,
+  R
 >;
 
-type ValidateIs = ValidateByType<
+export type ValidateIs<R extends DefaultMethod> = ValidateByTypeWithoutValue<
   | 'isPresent'
   | 'isNotPresent'
   | 'isString'
@@ -120,14 +128,14 @@ type ValidateIs = ValidateByType<
   | 'isNotTimestamp'
   | 'isNotNull'
   | 'isNull',
-  never
+  R
 >;
 
 export type ValidateValues<R extends DefaultMethod = any> =
-  | ValidateBoolean<R>
-  | ValidateString
-  | ValidateNumber
-  | ValidateIs;
+  | ValidateString<R>
+  | ValidateNumber<R>
+  | ValidateIs<R>
+  | ValidateBoolean<R>;
 
 export interface ValidateNot<R extends DefaultMethod> {
   mode: 'not';
