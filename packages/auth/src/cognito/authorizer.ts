@@ -1,4 +1,9 @@
-import { REALLY_LESS_CONTEXT } from '@really-less/common';
+import {
+  LambdaMetadata,
+  LambdaProps,
+  REALLY_LESS_CONTEXT,
+  createLambdaDecorator,
+} from '@really-less/common';
 import { getCallerFileName } from '@really-less/common/src/utils/path';
 import { basename, dirname } from 'node:path';
 
@@ -58,3 +63,10 @@ export const Auth = (props?: AuthorizerProps) => (constructor: Function) => {
     constructor
   );
 };
+
+export const Trigger = createLambdaDecorator<LambdaProps, LambdaMetadata>({
+  getLambdaMetadata: (props, name) => ({
+    name,
+    ...props,
+  }),
+});
