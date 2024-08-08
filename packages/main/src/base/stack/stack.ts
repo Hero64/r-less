@@ -1,11 +1,6 @@
 import { NestedStack } from 'aws-cdk-lib';
 
-import {
-  ResourceMetadata,
-  ResourceReflectKeys,
-  ResourceType,
-  ServicesValues,
-} from '@really-less/common';
+import { ResourceMetadata, ResourceReflectKeys, ResourceType } from '@really-less/common';
 import { ApiResourceMetadata } from '@really-less/api';
 import { StepFunctionResourceMetadata } from '@really-less/step_function';
 
@@ -15,15 +10,13 @@ import { EventResource } from './resources/event';
 import { createRole } from '../role/role';
 import { CommonResourceProps } from './resources/common';
 import { appManager } from '../../utils/manager';
+import { LambdaGlobalProps } from '../app/app';
+import { getEnvironmentByResource } from '../env/env';
 
-interface StackConfig {
-  apiGateway?: ApiProps;
-  services?: ServicesValues[];
-}
-
-interface CreateStackProps extends StackConfig {
+interface CreateStackProps extends LambdaGlobalProps {
   name: string;
   resources: Resource[];
+  apiGateway?: ApiProps;
 }
 
 export interface Resource {
@@ -39,12 +32,13 @@ export class AppNestedStack extends NestedStack {
   }
 
   async generateResources() {
-    const { apiGateway, name, resources } = this.props;
+    const { apiGateway, name, resources, env } = this.props;
 
     const role = this.createResourceRole();
     appManager.upsertResource(name, {
       role,
       apiResources: {},
+      env: getEnvironmentByResource(name, env),
     });
 
     for (const resource of resources) {

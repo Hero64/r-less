@@ -24,6 +24,7 @@ interface CreateLambdaProps {
   handler: LambdaMetadata;
   prefix?: string;
   excludeFiles?: string[];
+  env?: Record<string, any>;
 }
 
 export class CommonResource {
@@ -35,6 +36,7 @@ export class CommonResource {
     handler,
     prefix = '',
     excludeFiles = [],
+    env = {},
   }: CreateLambdaProps) {
     const { layer } = appManager.global;
     const { role } = appManager.resources[this.stackName];
@@ -60,6 +62,7 @@ export class CommonResource {
       memorySize: handler.lambda?.memory,
       role: lambdaRole,
       layers: layer ? [layer] : undefined,
+      environment: env,
     });
   }
 }

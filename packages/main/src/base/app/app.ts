@@ -4,29 +4,25 @@ import { Role } from 'aws-cdk-lib/aws-iam';
 import { Code, LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { cwd } from 'node:process';
 import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 import {
   REALLY_LESS_CONTEXT,
   REALLY_LESS_CONTEXT_VALUE,
   ServicesValues,
 } from '@really-less/common';
+
 import { createRole } from '../role/role';
-import { join } from 'node:path';
 import { ApiProps } from '../stack/resources/api/api';
 import { appManager } from '../../utils/manager';
-
-export type Environment = Record<string, number | string>;
+import { EnvironmentResource, processEnvValues } from '../env/env';
 
 export interface LambdaGlobalProps {
-  environment?: Environment;
+  env?: EnvironmentResource;
   services?: ServicesValues[];
 }
 
 export interface GlobalConfig {
-  /**
-   * Applies to all lambdas
-   */
-  env?: Environment;
   /**
    * Api gateway config by all api resource
    */
@@ -41,6 +37,7 @@ export interface AppResources {
   stack: Stack;
   role: Role;
   apiResources: Record<string, IResource>;
+  env: Record<string, any>;
   layer?: LayerVersion;
   api?: RestApi;
 }
@@ -80,6 +77,7 @@ class AppStack extends Stack {
       api: this.createDefaultApiGateway(),
       layer: this.createLambdaLayer(),
       apiResources: {},
+      env: await processEnvValues(this),
     });
 
     for (let stack of stacks) {

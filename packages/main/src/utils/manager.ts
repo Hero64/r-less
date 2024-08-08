@@ -3,10 +3,11 @@ import { Role } from 'aws-cdk-lib/aws-iam';
 
 import { AppResources } from '../base';
 
-interface StackResources {
+export interface StackResources {
   api: RestApi;
   role: Role;
   apiResources: Record<string, IResource>;
+  env: Record<string, any>;
 }
 
 class AppManager {

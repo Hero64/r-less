@@ -18,6 +18,12 @@ export interface LambdaProps {
    * services used by lambda function
    */
   services?: ServicesValues[];
+  /**
+   * variables extract from .env file or new variables from an object
+   *
+   * @example ['DB_HOST', { name: "other" }]
+   */
+  env?: (string | Record<string, string | number | boolean>)[];
 }
 
 export interface LambdaMetadata {

@@ -6,17 +6,17 @@
   "main": "index.js",
   "scripts": {
     "build-app": "tsc && really-less prepare",
-    "synth": "yarn build-app && yarn cdk synth -q"
+    "synth": "yarn build-app && cdk synth -q"
   },
   "dependencies": {
-    "@really-less/api": "0.1.0",
-    "@really-less/event": "0.1.0",
-    "@really-less/step_function": "0.1.0",
+    "@really-less/api": "*",
+    "@really-less/event": "*",
+    "@really-less/step_function": "*",
     "dayjs": "1.11.8"
   },
   "devDependencies": {
-    "@really-less/cli": "0.1.0",
-    "@really-less/main": "0.1.0",
+    "@really-less/cli": "*",
+    "@really-less/main": "*",
     "aws-cdk": "2.120.0",
     "cdk": "2.120.0"
   }

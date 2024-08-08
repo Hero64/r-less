@@ -17,6 +17,7 @@
     "@really-less/step_function": "*",
     "aws-cdk-lib": "2.117.0",
     "constructs": "10.2.61",
+    "dotenv": "16.4.5",
     "reflect-metadata": "0.1.13"
   },
   "devDependencies": {

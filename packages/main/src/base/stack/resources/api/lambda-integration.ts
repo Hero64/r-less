@@ -20,6 +20,7 @@ import { LambdaReflectKeys } from '@really-less/common';
 import { Resource } from '../../stack';
 import { CommonResource, CommonResourceProps } from '../common';
 import { appManager } from '../../../../utils/manager';
+import { getEnvironmentByResource } from '../../../env/env';
 
 interface ApiLambdaIntegrationProps extends CommonResourceProps {
   handler: ApiLambdaMetadata;
@@ -74,12 +75,15 @@ export class ApiLambdaIntegration extends CommonResource {
     const { apiMetadata, handler, apiResource, scope } = this.props;
     const { api } = appManager.resources[this.stackName];
 
+    console.log(getEnvironmentByResource(this.props.stackName, handler.lambda?.env));
+
     const lambda = this.createLambda({
       pathName: apiMetadata.foldername,
       filename: apiMetadata.filename,
       handler: handler,
       prefix: 'api-handler',
       excludeFiles: ['stepfunction', 'event'],
+      env: getEnvironmentByResource(this.props.stackName, handler.lambda?.env),
     });
 
     const { bodySchema, requestTemplate, requestParameters, requestValidations } =
