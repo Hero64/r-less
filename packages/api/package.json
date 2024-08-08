@@ -11,7 +11,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@really-less/common": "file:../common",
+    "@really-less/common": "*",
     "reflect-metadata": "0.1.13"
   },
   "devDependencies": {
