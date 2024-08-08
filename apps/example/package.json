@@ -1,23 +1,23 @@
 {
   "name": "@really-less/example",
-  "private": true,
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
   "license": "MIT",
+  "main": "index.js",
   "scripts": {
-    "build": "tsc && really-less prepare",
+    "build-app": "tsc && really-less prepare",
     "synth": "yarn build && yarn cdk synth -q"
-  },
-  "devDependencies": {
-    "@really-less/cli": "*",
-    "@really-less/main": "*",
-    "aws-cdk": "2.120.0",
-    "cdk": "2.120.0"
   },
   "dependencies": {
     "@really-less/api": "*",
     "@really-less/event": "*",
     "@really-less/step_function": "*",
     "dayjs": "1.11.8"
+  },
+  "devDependencies": {
+    "@really-less/cli": "*",
+    "@really-less/main": "*",
+    "aws-cdk": "2.120.0",
+    "cdk": "2.120.0"
   }
 }
