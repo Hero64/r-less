@@ -75,8 +75,6 @@ export class ApiLambdaIntegration extends CommonResource {
     const { apiMetadata, handler, apiResource, scope } = this.props;
     const { api } = appManager.resources[this.stackName];
 
-    console.log(getEnvironmentByResource(this.props.stackName, handler.lambda?.env));
-
     const lambda = this.createLambda({
       pathName: apiMetadata.foldername,
       filename: apiMetadata.filename,

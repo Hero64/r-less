@@ -59,7 +59,6 @@ const parseEnvParameters = (scope: Stack, values: Record<string, any>) => {
     ](scope, key, path);
   }
 
-  console.log(envValues);
   return envValues;
 };
 
