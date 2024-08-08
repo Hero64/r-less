@@ -1,13 +1,13 @@
 {
   "name": "@really-less/event",
+  "version": "0.1.0",
   "private": false,
-  "version": "1.0.0",
+  "license": "MIT",
   "main": "lib/index.js",
   "types": "src/index",
-  "license": "MIT",
   "scripts": {
-    "dev": "tsc -w",
     "build": "tsc",
+    "dev": "tsc -w",
     "test": "jest"
   },
   "dependencies": {

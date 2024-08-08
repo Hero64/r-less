@@ -1,15 +1,15 @@
 {
   "name": "@really-less/cli",
+  "version": "0.1.0",
   "private": false,
-  "version": "1.0.0",
-  "main": "lib/index.js",
   "license": "MIT",
+  "main": "lib/index.js",
   "bin": {
     "really-less": "lib/index.js"
   },
   "scripts": {
-    "dev": "tsc -w",
-    "build": "tsc"
+    "build": "tsc",
+    "dev": "tsc -w"
   },
   "dependencies": {
     "commander": "11.0.0",
