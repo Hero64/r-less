@@ -66,13 +66,13 @@ export const getStackFiles = async () => {
 
   for (const file of stackFiles) {
     const content = await readFile(file, 'utf-8');
-    const resources = content.match(/resources:\s*\[(?:[^,\n]+(?:,\s*)?)*\]/);
+    const resources = content.match(/resources:\s*\[\s*(?:[^,\]\n]+(?:,\s*)?)*\s*\]/);
 
     if (!resources) {
       continue;
     }
 
-    const list = resources[0].match(/\[(.*)\]/)?.[1];
+    const list = resources[0].match(/\[\s*([\s\S]*?)\s*\]/)?.[1];
 
     if (!list) {
       continue;
@@ -80,8 +80,11 @@ export const getStackFiles = async () => {
 
     let newContent = content;
 
-    const resourceList = list.replaceAll(' ', '').split(',');
+    const resourceList = list.replace(/\s+/g, '').split(',');
     for (const resource of resourceList) {
+      if (resource === '') {
+        continue;
+      }
       const { path, className } = getResourceFile(resource, content) || '';
 
       const filePath = join(dirname(file), `${path}.js`);
