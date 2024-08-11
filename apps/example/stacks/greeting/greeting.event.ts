@@ -13,7 +13,7 @@ export class GreetingEvent {
     schedule: {
       day: '*',
       hour: 1,
-      minute: 0,
+      minute: 1,
     },
   })
   sayHelloEveryTime() {
