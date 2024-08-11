@@ -97,7 +97,7 @@ export class StepFunctionResource extends CommonResource {
         pathName: this.metadata.foldername,
         filename: this.metadata.filename,
         handler,
-        prefix: 'sf-handler',
+        prefix: `sf-handler-${this.metadata.name}`,
         excludeFiles: ['api', 'event'],
       });
     }

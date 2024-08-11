@@ -12,7 +12,6 @@ import {
 export interface ApiLambdaProps {
   path?: string;
   lambda?: LambdaProps;
-  error?: string;
   integration?: boolean;
 }
 
@@ -62,28 +61,6 @@ const createMethodDecorator = (method: Method) =>
         integration,
         name: methodName,
       };
-    },
-    responseParser: (callback, response, isError) => {
-      if (isError) {
-        const isMessage = typeof response === 'string';
-        let selectResponseType = isMessage ? 'ERROR' : 'NOT_FOUND';
-        if (isMessage) {
-          selectResponseType =
-            ['UNAUTHORIZED', 'NOT_FOUND', 'FAILED'].find((m) => m.includes(response)) ||
-            selectResponseType;
-        }
-
-        callback(
-          selectResponseType,
-          isMessage
-            ? {
-                message: response,
-              }
-            : response
-        );
-      }
-
-      callback(null, response);
     },
   });
 

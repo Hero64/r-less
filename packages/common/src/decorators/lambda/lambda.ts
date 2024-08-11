@@ -24,6 +24,14 @@ export interface LambdaProps {
    * @example ['DB_HOST', { name: "other" }]
    */
   env?: (string | Record<string, string | number | boolean>)[];
+  /**
+   * tags of lambda
+   */
+  tags?: string[];
+  /**
+   * enables xray trace
+   */
+  enableTrace?: boolean;
 }
 
 export interface LambdaMetadata {
@@ -40,42 +48,44 @@ export enum LambdaReflectKeys {
 export enum LambdaArgumentTypes {
   EVENT,
   CALLBACK,
+  CONTEXT,
 }
+
+export type CallbackParam = (error: boolean | null, response?: any) => void;
 
 type LambdaArguments = Record<string, LambdaArgumentTypes[]>;
 type LambdaArgumentsType = Record<
   LambdaArgumentTypes,
   ({
     event,
+    context,
     callback,
   }: {
     event: any;
-    callback: any;
+    context: any;
+    callback: CallbackParam;
     argumentParser?: Partial<LambdaArgumentsType>;
   }) => any
 >;
 
-type ResponseParser = (
-  callback: (error: any, response: any) => void,
-  response: any,
-  isError?: boolean
-) => any;
-
 interface CreateLambdaDecoratorProps<T, M> {
   getLambdaMetadata: (params: T, methodName: string) => M;
-  responseParser?: ResponseParser;
   argumentParser?: Partial<LambdaArgumentsType>;
 }
 
 const argumentsByType: LambdaArgumentsType = {
-  [LambdaArgumentTypes.EVENT]: ({ event, callback, argumentParser = {} }) =>
+  [LambdaArgumentTypes.EVENT]: ({ event, context, callback, argumentParser = {} }) =>
     argumentParser[LambdaArgumentTypes.EVENT]
-      ? argumentParser[LambdaArgumentTypes.EVENT]({ event, callback })
+      ? argumentParser[LambdaArgumentTypes.EVENT]({ event, context, callback })
       : event,
-  [LambdaArgumentTypes.CALLBACK]: ({ event, callback, argumentParser = {} }) =>
+  [LambdaArgumentTypes.CALLBACK]: ({ event, context, callback, argumentParser = {} }) =>
     argumentParser[LambdaArgumentTypes.CALLBACK]
-      ? argumentParser[LambdaArgumentTypes.CALLBACK]({ event, callback })
+      ? argumentParser[LambdaArgumentTypes.CALLBACK]({ event, context, callback })
       : callback,
+  [LambdaArgumentTypes.CONTEXT]: ({ event, context, callback, argumentParser = {} }) =>
+    argumentParser[LambdaArgumentTypes.EVENT]
+      ? argumentParser[LambdaArgumentTypes.EVENT]({ event, context, callback })
+      : context,
 };
 
 const reflectArgumentMethod = (
@@ -90,30 +100,8 @@ const reflectArgumentMethod = (
   Reflect.defineMetadata(LambdaReflectKeys.ARGUMENTS, properties, target);
 };
 
-const responseLambda = (
-  response: any,
-  callback?: any,
-  parser?: ResponseParser,
-  isError: boolean = false
-) => {
-  if (parser && callback) {
-    parser(callback, response, isError);
-    return;
-  }
-
-  if (callback) {
-    isError ? callback(response) : callback(null, response);
-  } else {
-    return response;
-  }
-};
-
 export const createLambdaDecorator =
-  <T, M>({
-    getLambdaMetadata,
-    responseParser,
-    argumentParser,
-  }: CreateLambdaDecoratorProps<T, M>) =>
+  <T, M>({ getLambdaMetadata, argumentParser }: CreateLambdaDecoratorProps<T, M>) =>
   (props?: T) =>
   (target: any, methodName: string, descriptor: PropertyDescriptor) => {
     const handlersMetadata: M[] =
@@ -132,19 +120,14 @@ export const createLambdaDecorator =
 
     const { value: originalValue } = descriptor;
 
-    descriptor.value = async (event: any, _context: any, callback: any) => {
-      try {
-        const methodArguments = (lambdaArguments?.[methodName] || []).map(
-          (argumentType) =>
-            argumentsByType[argumentType]({ event, callback, argumentParser })
-        );
-        const response = await originalValue.apply(this, methodArguments);
-        return responseLambda(response, callback, responseParser);
-      } catch (e) {
-        if (e instanceof Error) {
-          return responseLambda(e.message, callback, responseParser, true);
-        }
-      }
+    descriptor.value = async (event: any, context: any, callback: CallbackParam) => {
+      const methodArguments = (lambdaArguments?.[methodName] || []).map((argumentType) =>
+        argumentsByType[argumentType]({ event, context, callback, argumentParser })
+      );
+
+      const response = await originalValue.apply(this, methodArguments);
+
+      return response;
     };
   };
 
@@ -169,4 +152,8 @@ export const createEventDecorator =
 
 export const Callback = () => (target: any, methodName: string, _number: number) => {
   reflectArgumentMethod(target, methodName, LambdaArgumentTypes.CALLBACK);
+};
+
+export const Context = () => (target: any, methodName: string, _number: number) => {
+  reflectArgumentMethod(target, methodName, LambdaArgumentTypes.CONTEXT);
 };

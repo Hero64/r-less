@@ -1,5 +1,10 @@
-import { Duration, NestedStack } from 'aws-cdk-lib';
-import { Code, Function as LambdaFunction, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Duration, NestedStack, Tags } from 'aws-cdk-lib';
+import {
+  Code,
+  Function as LambdaFunction,
+  Runtime,
+  Tracing,
+} from 'aws-cdk-lib/aws-lambda';
 import { LambdaMetadata } from '@really-less/common';
 
 import { createRole } from '../../role/role';
@@ -50,8 +55,8 @@ export class CommonResource {
         })
       : role;
 
-    return new LambdaFunction(this.scope, lambdaName, {
-      runtime: NodeRuntime[handler.lambda?.runtime || 18],
+    const lambda = new LambdaFunction(this.scope, lambdaName, {
+      runtime: NodeRuntime[handler.lambda?.runtime || 20],
       code: Code.fromAsset(pathName, {
         exclude: ['*.stack.js', ...excludeFiles.map((file) => `*-${file}.js`)],
       }),
@@ -63,6 +68,21 @@ export class CommonResource {
       role: lambdaRole,
       layers: layer ? [layer] : undefined,
       environment: env,
+      tracing: handler?.lambda?.enableTrace ? Tracing.ACTIVE : Tracing.DISABLED,
     });
+
+    this.createTags(lambda, handler.lambda?.tags);
+    return lambda;
+  }
+
+  private createTags(lambda: LambdaFunction, tags: string[] = []) {
+    const uniqueTags = new Set([...tags]);
+    if (tags.length === 0) {
+      return;
+    }
+
+    for (const tag of uniqueTags) {
+      Tags.of(lambda).add(tag, 'true');
+    }
   }
 }

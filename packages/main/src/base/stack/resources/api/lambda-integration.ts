@@ -24,7 +24,7 @@ import { getEnvironmentByResource } from '../../../env/env';
 
 interface ApiLambdaIntegrationProps extends CommonResourceProps {
   handler: ApiLambdaMetadata;
-  apiMetadata: ApiResourceMetadata;
+  metadata: ApiResourceMetadata;
   apiResource: IResource;
   resource: Resource;
 }
@@ -72,14 +72,14 @@ export class ApiLambdaIntegration extends CommonResource {
   }
 
   create() {
-    const { apiMetadata, handler, apiResource, scope } = this.props;
+    const { metadata, handler, apiResource, scope } = this.props;
     const { api } = appManager.resources[this.stackName];
 
     const lambda = this.createLambda({
-      pathName: apiMetadata.foldername,
-      filename: apiMetadata.filename,
+      pathName: metadata.foldername,
+      filename: metadata.filename,
       handler: handler,
-      prefix: 'api-handler',
+      prefix: `api-handler-${metadata.name}`,
       excludeFiles: ['stepfunction', 'event'],
       env: getEnvironmentByResource(this.props.stackName, handler.lambda?.env),
     });

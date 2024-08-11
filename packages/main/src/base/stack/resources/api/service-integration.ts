@@ -16,7 +16,7 @@ import { LambdaReflectKeys } from '@really-less/common';
 
 interface ApiServiceIntegrationProps {
   handler: ApiLambdaMetadata;
-  apiMetadata: ApiResourceMetadata;
+  metadata: ApiResourceMetadata;
   apiResource: IResource;
   resource: Resource;
 }

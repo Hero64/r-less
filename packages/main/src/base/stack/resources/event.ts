@@ -35,7 +35,7 @@ export class EventResource extends CommonResource {
         pathName: this.metadata.foldername,
         filename: this.metadata.filename,
         handler,
-        prefix: 'event-handler',
+        prefix: `event-handler-${this.metadata.name}`,
         excludeFiles: ['stepfunction', 'api'],
       });
 

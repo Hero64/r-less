@@ -15,7 +15,7 @@ export interface ApiProps {
 }
 
 interface ApiResourceProps extends CommonResourceProps {
-  apiMetadata: ApiResourceMetadata;
+  metadata: ApiResourceMetadata;
   apiProps?: ApiProps;
 }
 
@@ -25,7 +25,7 @@ export class ApiResource {
   }
 
   async generate() {
-    const { resource, apiMetadata, scope, stackName } = this.resourceProps;
+    const { resource, metadata, scope, stackName } = this.resourceProps;
 
     const handlers: ApiLambdaMetadata[] = Reflect.getMetadata(
       LambdaReflectKeys.HANDLERS,
@@ -40,7 +40,7 @@ export class ApiResource {
           handler,
           apiResource,
           resource,
-          apiMetadata,
+          metadata,
           scope,
           stackName,
         });
@@ -48,7 +48,7 @@ export class ApiResource {
         lambdaIntegrations.create();
       } else {
         const serviceIntegration = new ApiServiceIntegration({
-          apiMetadata,
+          metadata,
           apiResource,
           handler,
           resource,
@@ -74,10 +74,10 @@ export class ApiResource {
   }
 
   private generateApiResource = (handler: ApiLambdaMetadata) => {
-    const { apiMetadata, stackName } = this.resourceProps;
+    const { metadata, stackName } = this.resourceProps;
     const { apiResources, api } = appManager.resources[this.resourceProps.stackName];
 
-    let fullPath = `${this.cleanPath(apiMetadata.path)}/${this.cleanPath(handler.path)}`;
+    let fullPath = `${this.cleanPath(metadata.path)}/${this.cleanPath(handler.path)}`;
 
     if (apiResources[fullPath]) {
       return apiResources[fullPath];

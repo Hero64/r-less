@@ -58,7 +58,7 @@ export class AppNestedStack extends NestedStack {
           const apiResource = new ApiResource({
             ...commonOptions,
             apiProps: apiGateway,
-            apiMetadata: resourceMetadata as ApiResourceMetadata,
+            metadata: resourceMetadata as ApiResourceMetadata,
           });
 
           await apiResource.generate();
