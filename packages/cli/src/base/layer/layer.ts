@@ -97,9 +97,6 @@ const preparePackageJson = async () => {
     JSON.stringify({
       ...packageJson,
       dependencies: parsedDependencies,
-      workspaces: {
-        nohoist: dependencies,
-      },
     })
   );
 
@@ -110,7 +107,7 @@ const preparePackageJson = async () => {
 };
 
 const installPackages = async () => {
-  const command = spawn('yarn', ['--cwd', '.resources', '--prod', 'install']);
+  const command = spawn('npm', ['install', '--omit', 'dev', '--prefix', '.resources']);
   return new Promise((resolve, reject) => {
     command.stderr.on('data', (data) => {
       console.error(`stderr: ${data}`);
