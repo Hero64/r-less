@@ -11,10 +11,10 @@
     "test": "jest"
   },
   "dependencies": {
-    "@really-less/api": "*",
-    "@really-less/common": "*",
-    "@really-less/event": "*",
-    "@really-less/step_function": "*",
+    "@really-less/api": "0.1.1",
+    "@really-less/common": "0.1.1",
+    "@really-less/event": "0.1.1",
+    "@really-less/step_function": "0.1.1",
     "aws-cdk-lib": "2.117.0",
     "constructs": "10.2.61",
     "dotenv": "16.4.5",
