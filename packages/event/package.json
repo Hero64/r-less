@@ -1,6 +1,6 @@
 {
   "name": "@really-less/event",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": false,
   "license": "MIT",
   "main": "lib/index.js",
@@ -11,7 +11,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@really-less/common": "0.1.1",
+    "@really-less/common": "0.1.2",
     "reflect-metadata": "0.1.13"
   },
   "devDependencies": {
