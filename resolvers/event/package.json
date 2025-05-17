@@ -1,0 +1,28 @@
+{
+  "name": "@really-less/event-resolver",
+  "version": "0.1.2",
+  "private": false,
+  "license": "MIT",
+  "main": "lib/index.js",
+  "types": "src/index",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@really-less/common": "0.1.2",
+    "@really-less/common-resolver": "*",
+    "@really-less/event": "0.1.2",
+    "aws-cdk-lib": "2.196.0",
+    "constructs": "10.2.61",
+    "dotenv": "16.4.5",
+    "reflect-metadata": "0.1.13"
+  },
+  "devDependencies": {
+    "@types/jest": "29.5.2",
+    "jest": "29.5.0",
+    "ts-jest": "29.1.0",
+    "ts-node": "10.9.1"
+  }
+}

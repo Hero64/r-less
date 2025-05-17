@@ -13,7 +13,7 @@ export interface LambdaProps {
   /**
    * version of node environment
    */
-  runtime?: 20 | 18 | 16;
+  runtime?: 22 | 20 | 18;
   /**
    * services used by lambda function
    */

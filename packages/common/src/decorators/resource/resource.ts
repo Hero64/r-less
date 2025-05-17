@@ -3,12 +3,6 @@ import { basename, dirname } from 'path';
 import { getCallerFileName } from '../../utils/path';
 import { REALLY_LESS_CONTEXT } from '../../constants/env.constants';
 
-export enum ResourceType {
-  API = 'api',
-  STEP_FUNCTION = 'step_function',
-  EVENT = 'event',
-}
-
 export enum ResourceReflectKeys {
   RESOURCE = 'resource',
 }

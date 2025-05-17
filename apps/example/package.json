@@ -15,8 +15,11 @@
     "dayjs": "1.11.8"
   },
   "devDependencies": {
+    "@really-less/api-resolver": "*",
     "@really-less/cli": "*",
+    "@really-less/event-resolver": "*",
     "@really-less/main": "*",
+    "@really-less/step-function-resolver": "*",
     "aws-cdk": "2.120.0",
     "cdk": "2.120.0"
   }
