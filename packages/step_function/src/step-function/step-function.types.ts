@@ -13,7 +13,7 @@ import {
   StateMachineParamContext,
   StateParamContext,
   TaskParamContext,
-} from 'param';
+} from '../param';
 
 export type DefaultMethod = (...args: any) => any;
 export type ReturnMethodKeyOfOrString<T extends DefaultMethod> = ReturnType<T> extends {}
