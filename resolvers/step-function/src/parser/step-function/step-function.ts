@@ -273,7 +273,7 @@ export class StepFunctionResolver extends CommonResolver {
           itemsPath: this.parseParam(
             this.convertParameterToMetadata(next.itemsPath as ParameterItem)
           ),
-          parameters: {
+          itemSelector: {
             'index.$': this.parseParam({
               name: 'index',
               context: 'map',

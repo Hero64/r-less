@@ -20,7 +20,7 @@
     "@really-less/event-resolver": "*",
     "@really-less/main": "*",
     "@really-less/step-function-resolver": "*",
-    "aws-cdk": "2.120.0",
-    "cdk": "2.120.0"
+    "aws-cdk": "2.1018.0",
+    "cdk": "2.1018.0"
   }
 }

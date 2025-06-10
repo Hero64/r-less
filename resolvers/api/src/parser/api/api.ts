@@ -33,14 +33,16 @@ export class ApiResolver {
 
   private generateApiResource = (handlerMetadata: ApiLambdaMetadata) => {
     const { apiMetadata } = this.props;
-    const { apiRoutes, restApi } = apiManager;
+    const { restApi, apiRoutes } = apiManager;
+
+    const routes = { ...apiRoutes };
 
     const fullPath = `${this.cleanPath(apiMetadata.path)}/${this.cleanPath(
       handlerMetadata.path
     )}`;
 
-    if (apiRoutes[fullPath]) {
-      return apiRoutes[fullPath];
+    if (routes[fullPath]) {
+      return routes[fullPath];
     }
 
     if (fullPath === '/') {
@@ -54,17 +56,18 @@ export class ApiResolver {
     for (const resourceUrl of resourceUrlList) {
       paths.push(resourceUrl);
       const path = paths.join('/');
-      if (apiRoutes[path]) {
-        principalApiResource = apiRoutes[path];
+      if (routes[path]) {
+        principalApiResource = routes[path];
         continue;
       }
-      apiRoutes[path] = principalApiResource.addResource(resourceUrl);
-      principalApiResource = apiRoutes[path];
+
+      routes[path] = principalApiResource.addResource(resourceUrl);
+      principalApiResource = routes[path];
     }
 
-    apiManager.apiRoutes = principalApiResource;
+    apiManager.apiRoutes = routes;
 
-    return apiRoutes[fullPath];
+    return routes[fullPath];
   };
 
   private cleanPath = (path: string) => {

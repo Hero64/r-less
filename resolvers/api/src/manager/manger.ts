@@ -37,12 +37,12 @@ class ApiManager {
     return this.routes[this.props.apiName] || {};
   }
 
-  set apiRoutes(routes: IResource) {
+  set apiRoutes(routes: Record<string, IResource>) {
     this.validateProps();
 
     this.routes[this.props.apiName] = {
-      ...this.routes,
-      routes,
+      ...this.routes[this.props.apiName],
+      ...routes,
     };
   }
 

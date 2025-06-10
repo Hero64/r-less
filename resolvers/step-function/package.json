@@ -14,8 +14,8 @@
     "@really-less/common": "0.1.2",
     "@really-less/common-resolver": "*",
     "@really-less/step_function": "0.1.2",
-    "aws-cdk-lib": "2.196.0",
-    "constructs": "10.2.61",
+    "aws-cdk-lib": "2.200.1",
+    "constructs": "10.4.2",
     "dotenv": "16.4.5",
     "reflect-metadata": "0.1.13"
   },
