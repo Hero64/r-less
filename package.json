@@ -5,7 +5,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "format": "yarn biome format --write . ",
     "lint": "turbo run lint",
     "prepare": "husky",
     "publish-packages": "turbo run build && changeset version && changeset publish",
