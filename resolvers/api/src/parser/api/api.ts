@@ -1,8 +1,8 @@
-import { ApiLambdaMetadata } from '@really-less/api';
+import type { ApiLambdaMetadata } from '@really-less/api';
 
 import { apiManager } from '../../manager/manger';
 import { LambdaIntegration } from './integration/lambda.integration';
-import { ApiResolverProps } from './api.types';
+import type { ApiResolverProps } from './api.types';
 import { ServiceIntegration } from './integration/service.integration';
 
 export class ApiResolver {
@@ -18,7 +18,7 @@ export class ApiResolver {
 
     const route = this.generateApiResource(handlerMetadata);
 
-    let Integration = handlerMetadata.integration
+    const Integration = handlerMetadata.integration
       ? ServiceIntegration
       : LambdaIntegration;
     const integration = new Integration({
@@ -35,7 +35,7 @@ export class ApiResolver {
     const { apiMetadata } = this.props;
     const { apiRoutes, restApi } = apiManager;
 
-    let fullPath = `${this.cleanPath(apiMetadata.path)}/${this.cleanPath(
+    const fullPath = `${this.cleanPath(apiMetadata.path)}/${this.cleanPath(
       handlerMetadata.path
     )}`;
 
@@ -50,7 +50,7 @@ export class ApiResolver {
     const resourceUrlList = fullPath.split('/');
     let principalApiResource = restApi.root;
 
-    let paths = [];
+    const paths = [];
     for (const resourceUrl of resourceUrlList) {
       paths.push(resourceUrl);
       const path = paths.join('/');

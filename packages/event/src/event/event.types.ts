@@ -1,4 +1,4 @@
-import { LambdaMetadata } from '@really-less/common';
+import type { LambdaMetadata } from '@really-less/common';
 
 export interface CommonEventProps {
   /**

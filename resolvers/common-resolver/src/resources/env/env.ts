@@ -1,10 +1,10 @@
 import { parse } from 'dotenv';
-import { aws_ssm, Stack } from 'aws-cdk-lib';
+import { aws_ssm, type Stack } from 'aws-cdk-lib';
 
 import { join } from 'node:path';
 import { cwd } from 'node:process';
 import { readFile } from 'node:fs/promises';
-import { EnvironmentResource } from './env.types';
+import type { EnvironmentResource } from './env.types';
 
 const SSM_PARSER = {
   'SSM::STRING': (scope: Stack, name: string, path: string) => {

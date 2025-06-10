@@ -6,13 +6,13 @@ import {
 } from '@really-less/common';
 
 import {
-  DefaultMethod,
-  LambdaTaskMetadata,
-  LambdaTaskProps,
-  StepFunctionMapProps,
-  StepFunctionMapResourceProps,
+  type DefaultMethod,
+  type LambdaTaskMetadata,
+  type LambdaTaskProps,
+  type StepFunctionMapProps,
+  type StepFunctionMapResourceProps,
   StepFunctionReflectKeys,
-  StepFunctionResourceProps,
+  type StepFunctionResourceProps,
 } from './step-function.types';
 
 export const RESOURCE_TYPE = 'STEP_FUNCTION';

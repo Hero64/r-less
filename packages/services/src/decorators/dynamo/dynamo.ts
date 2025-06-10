@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { OnlyNumberString } from 'types/utils';
+import type { OnlyNumberString } from 'types/utils';
 
 export enum ModelMetadataKeys {
   MODEL = 'dynamo:model',

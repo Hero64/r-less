@@ -3,8 +3,8 @@ import {
   DynamoDBClient,
   QueryCommand,
   ScanCommand,
-  QueryCommandInput,
-  ScanCommandInput,
+  type QueryCommandInput,
+  type ScanCommandInput,
   PutItemCommand,
   UpdateItemCommand,
   DeleteItemCommand,
@@ -13,11 +13,11 @@ import { captureAWSv3Client } from 'aws-xray-sdk';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 
 import {
-  DynamoModelProps,
-  DynamoIndex,
+  type DynamoModelProps,
+  type DynamoIndex,
   ModelMetadataKeys,
 } from '../../decorators/dynamo/dynamo';
-import { DeepPartial, KeyOfClass, OnlyNumberString } from '../../types/utils';
+import type { DeepPartial, KeyOfClass, OnlyNumberString } from '../../types/utils';
 
 export interface ModelMetadata<T extends Function>
   extends Required<DynamoModelProps<T>> {}
@@ -43,10 +43,10 @@ type Filter<E> = {
         | (E[key] extends number
             ? OperationExpression<number> | CommonExpression<number>
             : E[key] extends boolean
-            ? CommonExpression<boolean>
-            : E[key] extends null
-            ? NullExpression
-            : StringExpression | StringFilterExpression | CommonExpression<string>)
+              ? CommonExpression<boolean>
+              : E[key] extends null
+                ? NullExpression
+                : StringExpression | StringFilterExpression | CommonExpression<string>)
     : DeepPartial<Filter<E[key]>>;
 };
 
@@ -188,12 +188,12 @@ export const createRepository = <E extends { new (...args: any[]): {} }>(model: 
   );
   const partitionKey: string = Reflect.getMetadata(
     ModelMetadataKeys.PARTITION_KEY,
-    model['prototype']
+    model.prototype
   );
 
   const sortKey: string | undefined = Reflect.getMetadata(
     ModelMetadataKeys.SORT_KEY,
-    model['prototype']
+    model.prototype
   );
 
   if (modelProps.tracing) {
@@ -313,7 +313,7 @@ export const createRepository = <E extends { new (...args: any[]): {} }>(model: 
     filter: Filter<T> | OrFilter<T> | AndFilter<T>,
     names: string[] = [],
     union: 'or' | 'and' = 'and',
-    counter: number = 0
+    counter = 0
   ) => {
     counter += 1;
     let filterExpression: Expression = {
@@ -327,7 +327,7 @@ export const createRepository = <E extends { new (...args: any[]): {} }>(model: 
         case 'OR': {
           const orFilter = filter as OrFilter<T>;
           const orExpressions: string[] = [];
-          for (const condition of orFilter['OR']) {
+          for (const condition of orFilter.OR) {
             const { expression, nameResolver, valueResolver } = getFilterExpression(
               condition,
               names,
@@ -354,7 +354,7 @@ export const createRepository = <E extends { new (...args: any[]): {} }>(model: 
         case 'AND': {
           const andFilter = filter as AndFilter<T>;
           const { expression, nameResolver, valueResolver } = getFilterExpression(
-            andFilter['AND'],
+            andFilter.AND,
             names,
             'and',
             counter
@@ -499,7 +499,7 @@ export const createRepository = <E extends { new (...args: any[]): {} }>(model: 
       };
     }
 
-    let items = data.concat(resultData);
+    const items = data.concat(resultData);
     if (LastEvaluatedKey && (!input.Limit || items.length < input.Limit)) {
       return runQuery(
         {
@@ -621,7 +621,7 @@ export const createRepository = <E extends { new (...args: any[]): {} }>(model: 
         }
       }
 
-      let expression = [];
+      const expression = [];
       if (updateValues.length) {
         expression.push(`SET ${updateValues.join(', ')}`);
       }

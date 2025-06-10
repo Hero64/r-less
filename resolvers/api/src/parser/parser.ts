@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
-import { CommonResolverProps } from '@really-less/common-resolver';
-import { ApiLambdaMetadata, ApiResourceMetadata } from '@really-less/api';
+import type { CommonResolverProps } from '@really-less/common-resolver';
+import type { ApiLambdaMetadata, ApiResourceMetadata } from '@really-less/api';
 import { LambdaReflectKeys, ResourceReflectKeys } from '@really-less/common';
 
 import { ApiResolver } from './api/api';

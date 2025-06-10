@@ -1,8 +1,8 @@
 import { NestedStack } from 'aws-cdk-lib';
 
-import { ResourceMetadata, ResourceReflectKeys } from '@really-less/common';
+import { type ResourceMetadata, ResourceReflectKeys } from '@really-less/common';
 
-import { CreateStackProps } from './stack.types';
+import type { CreateStackProps } from './stack.types';
 import { appManager } from '../manager/manager';
 import { createRole, getEnvValues } from '@really-less/common-resolver';
 

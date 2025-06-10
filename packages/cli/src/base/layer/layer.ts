@@ -1,10 +1,10 @@
 import { fromFile } from 'hasha';
 import { readFile, writeFile, mkdir, rename, rm, stat, readdir } from 'node:fs/promises';
-import { spawn } from 'child_process';
+import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { WriteCacheProps } from './types';
+import type { WriteCacheProps } from './types';
 
 const RESOURCE_FOLDER = '.resources';
 const CACHE_FILE_PATH = `${RESOURCE_FOLDER}/cache/index.json`;
@@ -87,7 +87,7 @@ const preparePackageJson = async () => {
     };
   }
 
-  delete packageJson.devDependencies;
+  packageJson.devDependencies = undefined;
 
   const { dependencies: parsedDependencies, localDependencies } =
     evaluateLocalDependencies(packageJson.dependencies);

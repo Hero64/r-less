@@ -1,7 +1,7 @@
 import { Duration } from 'aws-cdk-lib';
-import { Function as LambdaFunction } from 'aws-cdk-lib/aws-lambda';
+import type { Function as LambdaFunction } from 'aws-cdk-lib/aws-lambda';
 import {
-  INextable,
+  type INextable,
   Fail,
   Pass,
   StateMachine,
@@ -14,27 +14,27 @@ import {
   Map,
   DefinitionBody,
   TaskInput,
-  IChainable,
+  type IChainable,
   ProcessorMode,
   ProcessorType,
 } from 'aws-cdk-lib/aws-stepfunctions';
 import { LambdaReflectKeys, ResourceReflectKeys } from '@really-less/common';
 import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import {
-  LambdaTaskMetadata,
-  TaskTypes,
-  ValidateValues,
-  Validations,
-  ParamMetadata,
-  ParameterItem,
+  type LambdaTaskMetadata,
+  type TaskTypes,
+  type ValidateValues,
+  type Validations,
+  type ParamMetadata,
+  type ParameterItem,
   StepFunctionReflectKeys,
-  StepFunctionMapResourceMetadata,
-  ProcessorMode as SFProcessorMode,
-  ProcessorExecutionType as SFProcessorExecutionType,
-  ValidateByType,
+  type StepFunctionMapResourceMetadata,
+  type ProcessorMode as SFProcessorMode,
+  type ProcessorExecutionType as SFProcessorExecutionType,
+  type ValidateByType,
 } from '@really-less/step_function';
 import { CommonResolver } from '@really-less/common-resolver';
-import { StepFunctionResourceProps } from './step-function.types';
+import type { StepFunctionResourceProps } from './step-function.types';
 
 const processorMode: Record<SFProcessorMode, ProcessorMode> = {
   inline: ProcessorMode.INLINE,
@@ -47,7 +47,7 @@ const processorExecutionType: Record<SFProcessorExecutionType, ProcessorType> = 
 };
 
 export class StepFunctionResolver extends CommonResolver {
-  private taskIterator: number = 0;
+  private taskIterator = 0;
 
   constructor(protected props: StepFunctionResourceProps) {
     super(props);
@@ -57,7 +57,7 @@ export class StepFunctionResolver extends CommonResolver {
     const { stepFunctionMetadata, stackResource, nestedStack } = this.props;
     const { name, startAt } = stepFunctionMetadata;
     const { lambdas: lambdaTasks, handlers } = this.createLambdaTasks(
-      stackResource['prototype']
+      stackResource.prototype
     );
 
     new StateMachine(nestedStack.scope, name, {
@@ -152,7 +152,7 @@ export class StepFunctionResolver extends CommonResolver {
     lambdaTasks: Record<string, LambdaFunction>,
     originalTaskName: string,
     next?: TaskTypes<string>,
-    end: boolean = false
+    end = false
   ) => {
     if (!next || end) {
       return null as unknown as IChainable;
@@ -165,7 +165,7 @@ export class StepFunctionResolver extends CommonResolver {
     const callNext = <S extends INextable>(
       state: S,
       next?: TaskTypes<string>,
-      end: boolean = false
+      end = false
     ) => {
       const nextTask = this.nextTask(
         handlersMetadata,
@@ -215,8 +215,7 @@ export class StepFunctionResolver extends CommonResolver {
           nestedStack.scope,
           this.getTaskName('choice', originalTaskName)
         );
-
-        next.choices.forEach((choice) => {
+        for (const choice of next.choices) {
           const nextTask: any = this.nextTask(
             handlersMetadata,
             lambdaTasks,
@@ -225,10 +224,10 @@ export class StepFunctionResolver extends CommonResolver {
           );
 
           choiceTask.when(this.parseChoiceTask(choice), nextTask);
-        });
+        }
 
         if (next.default) {
-          let defaultTask = this.nextTask(
+          const defaultTask = this.nextTask(
             handlersMetadata,
             lambdaTasks,
             originalTaskName,
@@ -244,8 +243,7 @@ export class StepFunctionResolver extends CommonResolver {
           nestedStack.scope,
           this.getTaskName('parallel', originalTaskName)
         );
-
-        next.branches.forEach((branch) => {
+        for (const branch of next.branches) {
           const nextTask = this.nextTask(
             handlersMetadata,
             lambdaTasks,
@@ -253,7 +251,7 @@ export class StepFunctionResolver extends CommonResolver {
             branch
           );
           nextTask && parallelTask.branch(nextTask);
-        });
+        }
 
         callNext(parallelTask, next, next.end);
 
@@ -290,7 +288,7 @@ export class StepFunctionResolver extends CommonResolver {
         });
 
         const { handlers: mapHandlers, lambdas: mapLambdas } = this.createLambdaTasks(
-          next.itemProcessor['prototype']
+          next.itemProcessor.prototype
         );
 
         const itemProcessorTask = this.nextTask(

@@ -1,5 +1,5 @@
-import { ServicesValues } from '@really-less/common';
-import { ParserResolver, EnvironmentResource } from '@really-less/common-resolver';
+import type { ServicesValues } from '@really-less/common';
+import type { ParserResolver, EnvironmentResource } from '@really-less/common-resolver';
 
 export interface LambdaGlobalProps {
   env?: EnvironmentResource;

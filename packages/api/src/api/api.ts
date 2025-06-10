@@ -1,6 +1,11 @@
 import 'reflect-metadata';
 import { createLambdaDecorator, createResourceDecorator } from '@really-less/common';
-import { ApiLambdaMetadata, ApiLambdaProps, ApiProps, Method } from './api.types';
+import {
+  type ApiLambdaMetadata,
+  type ApiLambdaProps,
+  type ApiProps,
+  Method,
+} from './api.types';
 
 export const RESOURCE_TYPE = 'API';
 

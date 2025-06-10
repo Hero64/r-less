@@ -1,4 +1,4 @@
-import { basename, dirname } from 'path';
+import { basename, dirname } from 'node:path';
 
 import { getCallerFileName } from '../../utils/path';
 import { REALLY_LESS_CONTEXT } from '../../constants/env.constants';

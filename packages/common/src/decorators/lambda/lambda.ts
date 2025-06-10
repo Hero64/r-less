@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { ServicesValues } from '../../types/services';
+import type { ServicesValues } from '../../types/services';
 
 export interface LambdaProps {
   /**
@@ -46,9 +46,9 @@ export enum LambdaReflectKeys {
 }
 
 export enum LambdaArgumentTypes {
-  EVENT,
-  CALLBACK,
-  CONTEXT,
+  EVENT = 0,
+  CALLBACK = 1,
+  CONTEXT = 2,
 }
 
 export type CallbackParam = (error: boolean | null, response?: any) => void;
@@ -137,7 +137,7 @@ export const createEventDecorator =
   (target: any, methodName: string, _number: number) => {
     const eventFields = getEventFields(FieldClass);
 
-    let argumentsByMethod =
+    const argumentsByMethod =
       Reflect.getMetadata(LambdaReflectKeys.EVENT_PARAM, target) || {};
     Reflect.defineMetadata(
       LambdaReflectKeys.EVENT_PARAM,

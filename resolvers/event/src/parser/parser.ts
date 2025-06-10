@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
-import { CommonResolverProps } from '@really-less/common-resolver';
-import { StepFunctionMapResourceMetadata } from '@really-less/step_function';
+import type { CommonResolverProps } from '@really-less/common-resolver';
+import type { StepFunctionMapResourceMetadata } from '@really-less/step_function';
 import { EventResolver } from './event/event';
 import { ResourceReflectKeys } from '@really-less/common';
 

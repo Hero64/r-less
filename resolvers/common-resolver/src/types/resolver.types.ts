@@ -1,8 +1,8 @@
-import { App, NestedStack, Stack } from 'aws-cdk-lib';
+import { App, type NestedStack, type Stack } from 'aws-cdk-lib';
 
-import { IRole } from 'aws-cdk-lib/aws-iam';
-import { ILayerVersion } from 'aws-cdk-lib/aws-lambda';
-import { StackResource } from './resource.type';
+import type { IRole } from 'aws-cdk-lib/aws-iam';
+import type { ILayerVersion } from 'aws-cdk-lib/aws-lambda';
+import type { StackResource } from './resource.type';
 
 export interface LambdaGlobalConfig {
   role?: IRole;

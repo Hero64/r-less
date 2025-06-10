@@ -11,13 +11,16 @@ import {
   REALLY_LESS_CONTEXT_VALUE,
   ServicesValues,
 } from '@really-less/common';
-import { CreateAppProps } from './app.types';
+import type { CreateAppProps } from './app.types';
 import { appManager } from '../manager/manager';
 
 process.env[REALLY_LESS_CONTEXT] = REALLY_LESS_CONTEXT_VALUE;
 
 class AppStack extends Stack {
-  constructor(private scope: App, private props: CreateAppProps) {
+  constructor(
+    private scope: App,
+    private props: CreateAppProps
+  ) {
     const { name } = props;
     super(scope, name, {});
   }
@@ -26,7 +29,7 @@ class AppStack extends Stack {
     const { stacks, globalConfig } = this.props;
     await appManager.init(this, this.props);
 
-    for (let stack of stacks) {
+    for (const stack of stacks) {
       await stack();
     }
   }

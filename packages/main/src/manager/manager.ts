@@ -1,18 +1,18 @@
-import { Stack } from 'aws-cdk-lib';
-import { ServicesValues } from '@really-less/common';
+import type { Stack } from 'aws-cdk-lib';
+import type { ServicesValues } from '@really-less/common';
 import {
   createRole,
   getEnvValues,
-  ParserResolver,
+  type ParserResolver,
   processEnvValues,
 } from '@really-less/common-resolver';
 
-import { CreateAppProps, GlobalConfig } from '../app/app.types';
+import type { CreateAppProps, GlobalConfig } from '../app/app.types';
 import { Code, LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { join } from 'node:path';
 import { cwd } from 'node:process';
 import { existsSync } from 'node:fs';
-import { GlobalConfigProps, ObjectResolver } from './manger.types';
+import type { GlobalConfigProps, ObjectResolver } from './manger.types';
 
 const defaultServices: ServicesValues[] = [
   'dynamodb',
@@ -37,7 +37,8 @@ class AppManager {
   async init(scope: Stack, props: CreateAppProps) {
     this.scope = scope;
     this.name = props.name;
-    (this.layer = this.createLayer()), await this.parseEnvVariables();
+    this.layer = this.createLayer();
+    await this.parseEnvVariables();
     this.setResolvers(props.resolvers);
     this.setGlobalConfig(props.globalConfig || {});
   }
@@ -81,10 +82,10 @@ class AppManager {
   }
 
   private setResolvers(resolvers: ParserResolver[]) {
-    this.resolvers = resolvers.reduce(
-      (prev, current) => ({ ...prev, [current.type]: current }),
-      {} as ObjectResolver
-    );
+    this.resolvers = resolvers.reduce((prev, current) => {
+      prev[current.type] = current;
+      return prev;
+    }, {} as ObjectResolver);
   }
 }
 

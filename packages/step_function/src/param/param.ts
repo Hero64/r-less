@@ -1,7 +1,7 @@
 import { createEventDecorator } from '@really-less/common';
 
 import { StepFunctionReflectKeys } from '../step-function/step-function.types';
-import { ParamMetadata, ParamProps } from './param.types';
+import type { ParamMetadata, ParamProps } from './param.types';
 
 export const Event = createEventDecorator((ParamClass) => {
   return Reflect.getMetadata(StepFunctionReflectKeys.FIELD, ParamClass.prototype);

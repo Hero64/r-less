@@ -8,7 +8,7 @@ import {
 
 import { Api, Get, Post } from './api';
 import { Param, Event } from '../param/param';
-import { ApiLambdaMetadata, ApiResourceMetadata } from './api.types';
+import type { ApiLambdaMetadata, ApiResourceMetadata } from './api.types';
 
 process.env[REALLY_LESS_CONTEXT] = REALLY_LESS_CONTEXT_VALUE;
 

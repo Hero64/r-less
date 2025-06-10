@@ -5,11 +5,11 @@ import {
   Runtime,
   Tracing,
 } from 'aws-cdk-lib/aws-lambda';
-import { LambdaMetadata } from '@really-less/common';
+import type { LambdaMetadata } from '@really-less/common';
 
 import { createRole } from '../resources/role';
 import { getEnvValues } from '../resources/env';
-import { CommonResolverProps } from '../types';
+import type { CommonResolverProps } from '../types';
 
 export const NodeRuntime = {
   18: Runtime.NODEJS_18_X,

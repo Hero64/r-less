@@ -1,5 +1,5 @@
-import { ServicesValues } from '@really-less/common';
-import { Stack } from 'aws-cdk-lib';
+import type { ServicesValues } from '@really-less/common';
+import type { Stack } from 'aws-cdk-lib';
 
 export interface CreateRoleProps {
   /**

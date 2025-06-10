@@ -1,5 +1,5 @@
 {
   "*.{ts, md}": [
-    "prettier --write"
+    "yarn biome format --write ."
   ]
 }

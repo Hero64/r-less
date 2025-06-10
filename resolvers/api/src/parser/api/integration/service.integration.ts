@@ -1,9 +1,9 @@
-import { ParamMetadata, Source, IntegrationResponse } from '@really-less/api';
+import type { ParamMetadata, Source, IntegrationResponse } from '@really-less/api';
 import { AwsIntegration, PassthroughBehavior } from 'aws-cdk-lib/aws-apigateway';
 
 import { LambdaReflectKeys } from '@really-less/common';
 
-import { Integration, IntegrationProps } from './integration.types';
+import type { Integration, IntegrationProps } from './integration.types';
 
 const methodParamMap: Record<Source, string> = {
   query: 'method.request.querystring',

@@ -1,8 +1,8 @@
-import { ServicesName, ServicesValues } from '@really-less/common';
+import type { ServicesName, ServicesValues } from '@really-less/common';
 import { PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 import { createMd5Hash } from '../../utils/hash.utils';
-import { CreateRoleProps } from './role.types';
+import type { CreateRoleProps } from './role.types';
 
 const defaultPermissions: Record<ServicesName, string[]> = {
   dynamodb: [
@@ -112,24 +112,23 @@ const createPolicyStatement = (services: ServicesValues[]) => {
         }),
         resources: ['*'],
       });
-    } else {
-      const { type, permissions, resources = ['*'] } = service;
-      let rolePermissions: string[] = permissions as string[];
-      let serviceName: string = type;
-      if (type === 'custom') {
-        serviceName = service.serviceName;
-        rolePermissions = rolePermissions.length === 0 ? ['*'] : rolePermissions;
-      } else {
-        rolePermissions =
-          rolePermissions.length === 0 ? defaultPermissions[type] : rolePermissions;
-      }
-      return new PolicyStatement({
-        actions: rolePermissions.map((permission) => {
-          return `${serviceName}:${permission}`;
-        }),
-        resources,
-      });
     }
+    const { type, permissions, resources = ['*'] } = service;
+    let rolePermissions: string[] = permissions as string[];
+    let serviceName: string = type;
+    if (type === 'custom') {
+      serviceName = service.serviceName;
+      rolePermissions = rolePermissions.length === 0 ? ['*'] : rolePermissions;
+    } else {
+      rolePermissions =
+        rolePermissions.length === 0 ? defaultPermissions[type] : rolePermissions;
+    }
+    return new PolicyStatement({
+      actions: rolePermissions.map((permission) => {
+        return `${serviceName}:${permission}`;
+      }),
+      resources,
+    });
   });
 };
 

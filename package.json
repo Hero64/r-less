@@ -1,12 +1,7 @@
 {
   "name": "really-less",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*",
-    "modules/*",
-    "resolvers/*"
-  ],
+  "workspaces": ["apps/*", "packages/*", "modules/*", "resolvers/*"],
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
@@ -17,14 +12,12 @@
     "test": "turbo run test"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "@changesets/cli": "2.27.7",
     "@turbo/gen": "1.9.7",
     "@types/node": "20.3.1",
-    "eslint": "7.32.0",
-    "eslint-config-custom": "*",
     "husky": "8.0.0",
     "lint-staged": "15.2.0",
-    "prettier": "2.5.1",
     "tsc": "2.0.4",
     "turbo": "2.5.4",
     "typescript": "5.1.3"

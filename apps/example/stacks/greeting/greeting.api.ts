@@ -1,4 +1,4 @@
-import { Api, Get, Post, Event, IntegrationResponse } from '@really-less/api';
+import { Api, Get, Post, Event, type IntegrationResponse } from '@really-less/api';
 import { GreetingField, IntegrationEvent } from './greeting.field';
 
 @Api({

@@ -1,6 +1,6 @@
-import { RestApi, IResource } from 'aws-cdk-lib/aws-apigateway';
+import { RestApi, type IResource } from 'aws-cdk-lib/aws-apigateway';
 
-import { ManagerInitializeProps } from './manager.types';
+import type { ManagerInitializeProps } from './manager.types';
 
 class ApiManager {
   private apis: Record<string, RestApi> = {};

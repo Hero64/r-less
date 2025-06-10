@@ -1,5 +1,5 @@
 import { createLambdaDecorator, createResourceDecorator } from '@really-less/common';
-import {
+import type {
   EventCronMetadata,
   EventCronProps,
   EventRuleMetadata,

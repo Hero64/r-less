@@ -1,12 +1,18 @@
 import 'reflect-metadata';
 import { Duration } from 'aws-cdk-lib';
-import { CronOptions, EventBus, Rule, RuleProps, Schedule } from 'aws-cdk-lib/aws-events';
+import {
+  type CronOptions,
+  EventBus,
+  Rule,
+  type RuleProps,
+  Schedule,
+} from 'aws-cdk-lib/aws-events';
 import { LambdaFunction as LambdaFunctionTarget } from 'aws-cdk-lib/aws-events-targets';
 import { LambdaReflectKeys } from '@really-less/common';
 
-import { EventCronMetadata, EventRuleMetadata } from '@really-less/event';
+import type { EventCronMetadata, EventRuleMetadata } from '@really-less/event';
 import { CommonResolver } from '@really-less/common-resolver';
-import { EventResourceProps } from './event.types';
+import type { EventResourceProps } from './event.types';
 
 export class EventResolver extends CommonResolver {
   private bus: EventBus;
@@ -32,7 +38,7 @@ export class EventResolver extends CommonResolver {
         excludeFiles: ['stepfunction', 'api'],
       });
 
-      let ruleProps: { -readonly [key in keyof RuleProps]: RuleProps[key] } = {
+      const ruleProps: { -readonly [key in keyof RuleProps]: RuleProps[key] } = {
         targets: [
           new LambdaFunctionTarget(lambda, {
             retryAttempts: handler.retryAttempts,

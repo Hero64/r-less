@@ -43,7 +43,7 @@ const addExportMethodInFile = async (path: string, className: string) => {
   const initialization = `${className.toLocaleLowerCase()}1`;
 
   const regexMethod = new RegExp(`${className}.prototype,.+["|'](.*)["|'],`, 'g');
-  let exportMethods = ``;
+  let exportMethods = '';
   const methods = content.matchAll(regexMethod);
   for (const method of methods) {
     exportMethods += `

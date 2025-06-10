@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { createEventDecorator } from '@really-less/common';
 
 import { ApiReflectKeys } from '../api/api.types';
-import { ParamMetadata, ParamProps } from './param.types';
+import type { ParamMetadata, ParamProps } from './param.types';
 
 export const Event = createEventDecorator((ParamClass) => {
   return Reflect.getMetadata(ApiReflectKeys.FIELD, ParamClass.prototype);

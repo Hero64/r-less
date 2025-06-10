@@ -1,11 +1,11 @@
-import {
+import type {
   LambdaMetadata,
   LambdaProps,
   ResourceMetadata,
   ResourceProps,
 } from '@really-less/common';
 
-import {
+import type {
   CustomParamContext,
   ExecutionParamContext,
   InputParamContext,
