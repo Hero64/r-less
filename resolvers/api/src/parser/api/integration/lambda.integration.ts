@@ -4,9 +4,7 @@ import {
   JsonSchemaType,
   Model,
   RequestValidator,
-  IResource,
   LambdaIntegration as AWSLambdaIntegration,
-  RestApi,
 } from 'aws-cdk-lib/aws-apigateway';
 import {
   type ApiLambdaMetadata,
@@ -16,8 +14,6 @@ import {
 } from '@really-less/api';
 import { LambdaReflectKeys } from '@really-less/common';
 import { CommonResolver } from '@really-less/common-resolver';
-
-import { ApiResolverProps } from '../api.types';
 import type { Integration, IntegrationProps } from './integration.types';
 
 const schemaTypeMap: Record<string, JsonSchemaType> = {

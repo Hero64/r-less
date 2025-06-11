@@ -29,7 +29,7 @@ class ExampleApi {
   postLambda() {}
 
   @Get()
-  getLambdaWithEvent(@Event(ExampleArgument) e: ExampleArgument) {}
+  getLambdaWithEvent(@Event(ExampleArgument) _e: ExampleArgument) {}
 }
 
 describe('API Decorator', () => {

@@ -1,7 +1,7 @@
-import { Api, Get, Post, Event, type IntegrationResponse } from '@really-less/api';
+import { Api, Get, Post, Event } from '@really-less/api';
 import dayjs from 'dayjs';
 
-import { GreetingField, IntegrationEvent } from './greeting.field';
+import { GreetingField } from './greeting.field';
 
 @Api({
   path: 'greeting/{id}',
