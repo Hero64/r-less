@@ -1,6 +1,6 @@
-import { App, type NestedStack, type Stack } from 'aws-cdk-lib';
+import type { NestedStack, Stack } from 'aws-cdk-lib';
 
-import type { IRole } from 'aws-cdk-lib/aws-iam';
+import type { IRole, Role } from 'aws-cdk-lib/aws-iam';
 import type { ILayerVersion } from 'aws-cdk-lib/aws-lambda';
 import type { StackResource } from './resource.type';
 

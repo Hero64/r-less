@@ -6,6 +6,8 @@
   "main": "index.js",
   "scripts": {
     "build-app": "tsc && really-less prepare",
+    "deploy": "cdk deploy",
+    "destroy": "cdk destroy",
     "synth": "yarn build-app && cdk synth -q"
   },
   "dependencies": {
@@ -21,6 +23,7 @@
     "@really-less/main": "*",
     "@really-less/step-function-resolver": "*",
     "aws-cdk": "2.1018.0",
-    "cdk": "2.1018.0"
+    "cdk": "2.1018.0",
+    "esbuild": "0.25.5"
   }
 }

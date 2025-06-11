@@ -29,7 +29,9 @@
         "noBannedTypes": "off"
       },
       "correctness": {
-        "noSwitchDeclarations": "off"
+        "noSwitchDeclarations": "off",
+        "noUnusedVariables": "error",
+        "noUnusedImports": "error"
       }
     }
   },

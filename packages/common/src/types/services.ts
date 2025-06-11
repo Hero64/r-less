@@ -15,7 +15,7 @@ interface PermissionService<T extends ServicesName | 'custom', P extends string>
   resources?: string[];
 }
 
-type DynamoPermissions =
+export type DynamoPermissions =
   | 'Query'
   | 'Scan'
   | 'GetItem'
@@ -25,7 +25,7 @@ type DynamoPermissions =
   | 'UpdateItem'
   | 'ConditionCheckItem';
 
-type S3Permissions =
+export type S3Permissions =
   | 'AbortMultipartUpload'
   | 'CreateBucket'
   | 'DeleteBucket'
@@ -54,11 +54,11 @@ type S3Permissions =
   | 'ReplicateTags'
   | 'RestoreObject';
 
-type LambdaPermissions = 'InvokeFunction';
+export type LambdaPermissions = 'InvokeFunction';
 
-type LogsPermission = 'CreateLogGroup' | 'CreateLogStream' | 'PutLogEvents';
+export type LogsPermission = 'CreateLogGroup' | 'CreateLogStream' | 'PutLogEvents';
 
-type SQSPermissions =
+export type SQSPermissions =
   | 'DeleteMessage'
   | 'GetQueueUrl'
   | 'ReceiveMessage'
@@ -66,13 +66,13 @@ type SQSPermissions =
   | 'ReceiveMessage'
   | 'SendMessage';
 
-type StepFunctionPermissions =
+export type StepFunctionPermissions =
   | 'InvokeHTTPEndpoint'
   | 'DescribeExecution'
   | 'StartExecution'
   | 'StopExecution';
 
-type KMSPermissions =
+export type KMSPermissions =
   | 'Decrypt'
   | 'DescribeKey'
   | 'Encrypt'
@@ -82,7 +82,7 @@ type KMSPermissions =
   | 'Sign'
   | 'Verify';
 
-type SSMPermissions =
+export type SSMPermissions =
   | 'DescribeParameters'
   | 'GetDocument'
   | 'GetParameter'
@@ -91,7 +91,7 @@ type SSMPermissions =
   | 'ListDocuments'
   | 'PutParameter';
 
-type EventPermissions =
+export type EventPermissions =
   | 'DescribeEventRule'
   | 'DescribeEventBus'
   | 'DescribeRule'

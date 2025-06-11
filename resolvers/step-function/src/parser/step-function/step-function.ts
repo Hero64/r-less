@@ -341,7 +341,7 @@ export class StepFunctionResolver extends CommonResolver {
       input: '$$.Execution.Input',
       state: '$$.State',
       state_machine: '$$.StateMachine',
-      payload: '$.',
+      payload: '$',
       map: '$$.Map.Item',
     };
 

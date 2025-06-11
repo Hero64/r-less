@@ -2,7 +2,6 @@
 import { program } from 'commander';
 import { createSpinner } from 'nanospinner';
 
-import { generateLayer } from './base/layer';
 import { getStackFiles } from './base/export';
 
 program
@@ -12,7 +11,7 @@ program
     const spinner = createSpinner('Generating Layers');
     try {
       spinner.start();
-      await generateLayer();
+
       spinner.update({
         text: 'Exporting resources',
       });

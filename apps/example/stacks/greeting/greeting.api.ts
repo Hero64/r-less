@@ -1,4 +1,6 @@
 import { Api, Get, Post, Event, type IntegrationResponse } from '@really-less/api';
+import dayjs from 'dayjs';
+
 import { GreetingField, IntegrationEvent } from './greeting.field';
 
 @Api({
@@ -9,17 +11,17 @@ export class GreetingApi {
     path: '/hello',
   })
   sayHello() {
-    console.log('Hello');
+    console.log('Hello', dayjs().format('DD-MM-YYYY'));
   }
 
   @Post({
     path: '/bye',
   })
   sayBye(@Event(GreetingField) e: GreetingField) {
-    console.log('Bye');
+    console.log('Bye', e);
   }
 
-  @Get({
+  /* @Get({
     path: '/{bucket}/{key}',
     integration: true,
   })
@@ -33,5 +35,5 @@ export class GreetingApi {
         object: e.key,
       },
     };
-  }
+  } */
 }

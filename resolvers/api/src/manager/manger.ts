@@ -1,11 +1,22 @@
 import { RestApi, type IResource } from 'aws-cdk-lib/aws-apigateway';
+import type { Role } from 'aws-cdk-lib/aws-iam';
+import type { Stack } from 'aws-cdk-lib';
+import { createRole } from '@really-less/common-resolver';
+import type { S3Permissions } from '@really-less/common';
 
 import type { ManagerInitializeProps } from './manager.types';
+
+type ServiceStackRole = 's3Read' | 's3Write';
+const permissionsByRole: Record<ServiceStackRole, S3Permissions[]> = {
+  s3Read: ['GetObject'],
+  s3Write: ['GetObject', 'PutObject'],
+};
 
 class ApiManager {
   private apis: Record<string, RestApi> = {};
   private routes: Record<string, Record<string, IResource>> = {};
   private props: ManagerInitializeProps;
+  private serviceRoles: Partial<Record<ServiceStackRole, Role>> = {};
 
   initialize(props: ManagerInitializeProps) {
     this.props = props;
@@ -44,6 +55,27 @@ class ApiManager {
       ...this.routes[this.props.apiName],
       ...routes,
     };
+  }
+
+  getRole(service: ServiceStackRole) {
+    if (this.serviceRoles[service]) {
+      return this.serviceRoles[service];
+    }
+  }
+
+  setServiceRole(service: ServiceStackRole, principal: string, scope: Stack) {
+    this.serviceRoles[service] = createRole({
+      scope,
+      services: [
+        {
+          type: 's3',
+          permissions: permissionsByRole[service],
+        },
+      ],
+      principal,
+    });
+
+    return this.serviceRoles[service];
   }
 
   private validateProps() {

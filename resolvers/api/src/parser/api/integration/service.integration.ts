@@ -4,6 +4,7 @@ import { AwsIntegration, PassthroughBehavior } from 'aws-cdk-lib/aws-apigateway'
 import { LambdaReflectKeys } from '@really-less/common';
 
 import type { Integration, IntegrationProps } from './integration.types';
+import { apiManager } from '../../../manager/manger';
 
 const methodParamMap: Record<Source, string> = {
   query: 'method.request.querystring',
@@ -32,6 +33,14 @@ export class ServiceIntegration implements Integration {
         for (const key in event) {
           requestParameters[event[key]] = true;
         }
+        let integrationRole = apiManager.getRole('s3Read');
+        if (!integrationRole) {
+          integrationRole = apiManager.setServiceRole(
+            's3Read',
+            'apigateway.amazonaws.com',
+            this.props.nestedStack.scope
+          );
+        }
 
         route.addMethod(
           handlerMetadata.method,
@@ -40,7 +49,7 @@ export class ServiceIntegration implements Integration {
             path: '{bucket}/{object}',
             integrationHttpMethod: handlerMetadata.method,
             options: {
-              // credentialsRole: // TODO: add role
+              credentialsRole: integrationRole,
               passthroughBehavior: PassthroughBehavior.WHEN_NO_TEMPLATES,
               requestParameters: {
                 'integration.request.path.bucket': integrationResponse.options.bucket,

@@ -1,7 +1,6 @@
-import { Duration, NestedStack, Tags } from 'aws-cdk-lib';
+import { Duration, Tags } from 'aws-cdk-lib';
 import {
-  Code,
-  Function as LambdaFunction,
+  type Function as LambdaFunction,
   Runtime,
   Tracing,
 } from 'aws-cdk-lib/aws-lambda';
@@ -10,6 +9,8 @@ import type { LambdaMetadata } from '@really-less/common';
 import { createRole } from '../resources/role';
 import { getEnvValues } from '../resources/env';
 import type { CommonResolverProps } from '../types';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import path from 'node:path';
 
 export const NodeRuntime = {
   18: Runtime.NODEJS_18_X,
@@ -33,25 +34,30 @@ export class CommonResolver {
     filename,
     handler,
     prefix = '',
-    excludeFiles = [],
   }: CreateLambdaProps) {
     const lambdaName = `${prefix}_${handler.name}`;
-    const { nestedStack, app } = this.props;
+    const { nestedStack } = this.props;
 
-    const lambda = new LambdaFunction(nestedStack.scope, lambdaName, {
+    const lambda = new NodejsFunction(nestedStack.scope, lambdaName, {
       runtime: NodeRuntime[handler.lambda?.runtime || 20],
-      code: Code.fromAsset(pathName, {
-        exclude: ['*.stack.js', ...excludeFiles.map((file) => `*-${file}.js`)],
-      }),
-      handler: `${filename}.${handler.name}`,
+      entry: path.join(pathName, `${filename}.js`),
+      handler: handler.name,
       timeout: handler.lambda?.timeout
         ? Duration.seconds(handler.lambda.timeout)
         : undefined,
       memorySize: handler.lambda?.memory,
-      layers: app.layer ? [app.layer] : undefined,
       role: this.getRole(handler),
       environment: this.getEnvVariables(handler),
       tracing: handler?.lambda?.enableTrace ? Tracing.ACTIVE : Tracing.DISABLED,
+
+      bundling: {
+        minify: true,
+        externalModules: ['@aws-sdk'],
+        esbuildArgs: {
+          '--log-level': 'silent',
+          '--legal-comments': 'none',
+        },
+      },
     });
 
     this.createTags(lambda, handler.lambda?.tags);

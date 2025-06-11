@@ -1,9 +1,15 @@
 {
   "name": "really-less",
   "private": true,
-  "workspaces": ["apps/*", "packages/*", "modules/*", "resolvers/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "modules/*",
+    "resolvers/*"
+  ],
   "scripts": {
     "build": "turbo run build",
+    "clean": "find . -name \"node_modules\" -type d -prune -exec rm -rf {} +",
     "dev": "turbo run dev",
     "format": "yarn biome format --write . ",
     "lint": "turbo run lint",
