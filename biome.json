@@ -3,7 +3,7 @@
   "vcs": { "enabled": false, "clientKind": "git", "useIgnoreFile": false },
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["**/dist/**", "**/lib/**", "**/cdk.out/**"]
+    "ignore": ["**/dist/**", "**/lib/**", "**/cdk.out/**", "package.json"]
   },
   "formatter": {
     "enabled": true,
