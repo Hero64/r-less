@@ -1,10 +1,10 @@
 import { RestApi, type IResource } from 'aws-cdk-lib/aws-apigateway';
 import type { Role } from 'aws-cdk-lib/aws-iam';
 import type { Stack } from 'aws-cdk-lib';
-import { createRole } from '@really-less/common-resolver';
 import type { S3Permissions } from '@really-less/common';
+import { createRole } from '@really-less/common-resolver';
 
-import type { ManagerInitializeProps } from './manager.types';
+import type { ManagerInitializeProps, RestApiOptions } from './manager.types';
 
 type ServiceStackRole = 's3Read' | 's3Write';
 const permissionsByRole: Record<ServiceStackRole, S3Permissions[]> = {
@@ -22,24 +22,37 @@ class ApiManager {
     this.props = props;
   }
 
+  setRestApis(apis: RestApiOptions[], scope: Stack, name: string) {
+    if (Object.keys(this.apis).length > 0) {
+      return;
+    }
+
+    if (apis.length === 0) {
+      const restApiName = `${name}-api`;
+      this.apis = {
+        [restApiName]: new RestApi(scope, restApiName, {
+          restApiName: restApiName,
+        }),
+      };
+    }
+
+    for (const api of apis) {
+      this.apis[api.restApiName] = new RestApi(scope, api.restApiName, api);
+    }
+  }
+
   get restApi() {
     this.validateProps();
 
-    const { apiName, appScope } = this.props;
+    const { apiName } = this.props;
     const api = this.apis[apiName];
 
-    if (api) {
-      return api;
+    if (!api) {
+      throw new Error(
+        `API ${apiName} edoes not exist, please verify that it is included in the API resolver config.`
+      );
     }
-
-    this.apis = {
-      ...this.apis,
-      [apiName]: new RestApi(appScope, apiName, {
-        restApiName: apiName,
-      }),
-    };
-
-    return this.apis[apiName];
+    return api;
   }
 
   get apiRoutes(): Record<string, IResource> {

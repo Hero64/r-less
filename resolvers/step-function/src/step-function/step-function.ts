@@ -46,7 +46,7 @@ const processorExecutionType: Record<SFProcessorExecutionType, ProcessorType> = 
   standard: ProcessorType.STANDARD,
 };
 
-export class StepFunctionResolver extends CommonResolver {
+export class StepFunctionParserResolver extends CommonResolver {
   private taskIterator = 0;
 
   constructor(protected props: StepFunctionResourceProps) {

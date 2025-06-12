@@ -14,7 +14,7 @@ import type { EventCronMetadata, EventRuleMetadata } from '@really-less/event';
 import { CommonResolver } from '@really-less/common-resolver';
 import type { EventResourceProps } from './event.types';
 
-export class EventResolver extends CommonResolver {
+export class EventParserResolver extends CommonResolver {
   private bus: EventBus;
 
   constructor(protected props: EventResourceProps) {

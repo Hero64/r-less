@@ -4,7 +4,7 @@ import { AwsIntegration, PassthroughBehavior } from 'aws-cdk-lib/aws-apigateway'
 import { LambdaReflectKeys } from '@really-less/common';
 
 import type { Integration, IntegrationProps } from './integration.types';
-import { apiManager } from '../../../manager/manger';
+import { apiManager } from '../../manager/manger';
 
 const methodParamMap: Record<Source, string> = {
   query: 'method.request.querystring',

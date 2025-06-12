@@ -33,5 +33,6 @@ export interface CommonResolverProps {
 
 export interface ParserResolver {
   type: string;
+  initAppResources?: (scope: Stack, appName: string) => void;
   parser: (props: CommonResolverProps) => Promise<void>;
 }

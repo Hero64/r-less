@@ -8,5 +8,5 @@ import GreetingStack from './stacks/greeting/greeting.stack';
 createApp({
   name: 'example',
   stacks: [GreetingStack],
-  resolvers: [ApiResolver, StepFunctionResolver, EventResolver],
+  resolvers: [new ApiResolver(), new StepFunctionResolver(), new EventResolver()],
 });

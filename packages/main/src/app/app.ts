@@ -8,16 +8,22 @@ process.env[REALLY_LESS_CONTEXT] = REALLY_LESS_CONTEXT_VALUE;
 
 class AppStack extends Stack {
   constructor(
-    private scope: App,
-    private props: CreateAppProps
+    protected scope: App,
+    protected props: CreateAppProps
   ) {
     const { name } = props;
     super(scope, name, {});
   }
 
   async init() {
-    const { stacks } = this.props;
+    const { stacks, resolvers } = this.props;
     await appManager.init(this, this.props);
+
+    for (const resolver of resolvers) {
+      if (resolver.initAppResources) {
+        resolver.initAppResources(this, this.props.name);
+      }
+    }
 
     for (const stack of stacks) {
       await stack();

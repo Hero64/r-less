@@ -1,15 +1,15 @@
 import type { ApiLambdaMetadata } from '@really-less/api';
 
-import { apiManager } from '../../manager/manger';
+import { apiManager } from '../manager/manger';
 import { LambdaIntegration } from './integration/lambda.integration';
 import type { ApiResolverProps } from './api.types';
 import { ServiceIntegration } from './integration/service.integration';
 
-export class ApiResolver {
+export class ApiParserResolver {
   constructor(protected props: ApiResolverProps) {
     apiManager.initialize({
       appScope: props.app.scope,
-      apiName: props.apiMetadata.apiGatewayName || 'default',
+      apiName: props.apiMetadata.apiGatewayName || `${this.props.app.name}-api`,
     });
   }
 
