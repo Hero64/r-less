@@ -1,24 +1,27 @@
 {
-  "name": "@really-less/services",
+  "name": "@really-less/dynamodb-resolver",
   "version": "0.1.2",
   "private": false,
   "license": "MIT",
   "main": "lib/index.js",
+  "types": "src/index",
   "scripts": {
     "build": "tsc",
     "dev": "tsc -w",
     "test": "jest"
   },
   "dependencies": {
+    "@really-less/common": "*",
+    "@really-less/common-resolver": "*",
+    "@really-less/dynamodb": "*",
+    "aws-cdk-lib": "2.200.1",
+    "constructs": "10.4.2",
+    "dotenv": "16.4.5",
     "reflect-metadata": "0.1.13"
   },
   "devDependencies": {
-    "@aws-sdk/client-dynamodb": "3.474.0",
-    "@aws-sdk/util-dynamodb": "3.474.0",
     "@types/jest": "29.5.2",
-    "aws-xray-sdk": "3.5.3",
     "jest": "29.5.0",
-    "jest-dynalite": "^3.6.1",
     "ts-jest": "29.1.0",
     "ts-node": "10.9.1"
   }

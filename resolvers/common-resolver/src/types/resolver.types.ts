@@ -1,8 +1,8 @@
+import type { ClassResource } from '@really-less/common';
 import type { NestedStack, Stack } from 'aws-cdk-lib';
 
 import type { IRole } from 'aws-cdk-lib/aws-iam';
 import type { ILayerVersion } from 'aws-cdk-lib/aws-lambda';
-import type { StackResource } from './resource.type';
 
 export interface LambdaGlobalConfig {
   role?: IRole;
@@ -28,7 +28,7 @@ export interface NestedStackResolverProps extends ResolverProps {
 export interface CommonResolverProps {
   app: AppResolverProps;
   nestedStack: NestedStackResolverProps;
-  stackResource: StackResource;
+  stackResource: ClassResource;
 }
 
 export interface ParserResolver {

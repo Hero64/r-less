@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@really-less/api": "*",
+    "@really-less/dynamodb": "*",
     "@really-less/event": "*",
     "@really-less/step_function": "*",
     "dayjs": "1.11.8"
@@ -19,6 +20,7 @@
   "devDependencies": {
     "@really-less/api-resolver": "*",
     "@really-less/cli": "*",
+    "@really-less/dynamodb-resolver": "*",
     "@really-less/event-resolver": "*",
     "@really-less/main": "*",
     "@really-less/step-function-resolver": "*",

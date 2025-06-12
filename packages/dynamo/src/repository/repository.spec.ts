@@ -1,6 +1,6 @@
 import 'reflect-metadata';
-import { DynamoModel, PartitionKey, SortKey } from '../../decorators/dynamo/dynamo';
-import { createRepository, client } from './dynamo';
+import { DynamoModel, Field, PartitionKey, SortKey } from '../model';
+import { createRepository, client } from './repository';
 
 interface Address {
   city: string;
@@ -24,8 +24,11 @@ class User {
   readonly email!: string;
   @SortKey
   readonly name!: string;
+  @Field
   readonly lastName!: string;
+  @Field
   readonly age!: number;
+  @Field
   readonly address?: Address;
 }
 

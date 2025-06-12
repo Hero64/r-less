@@ -1,129 +1,36 @@
-import 'reflect-metadata';
 import {
-  DynamoDBClient,
-  QueryCommand,
-  ScanCommand,
-  type QueryCommandInput,
-  type ScanCommandInput,
-  PutItemCommand,
-  UpdateItemCommand,
   DeleteItemCommand,
+  DynamoDBClient,
+  PutItemCommand,
+  QueryCommand,
+  type QueryCommandInput,
+  ScanCommand,
+  type ScanCommandInput,
+  UpdateItemCommand,
 } from '@aws-sdk/client-dynamodb';
 import { captureAWSv3Client } from 'aws-xray-sdk';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 
-import {
-  type DynamoModelProps,
-  type DynamoIndex,
-  ModelMetadataKeys,
-} from '../../decorators/dynamo/dynamo';
-import type { DeepPartial, KeyOfClass, OnlyNumberString } from '../../types/utils';
-
-export interface ModelMetadata<T extends Function>
-  extends Required<DynamoModelProps<T>> {}
-
-type OperationExpression<E> =
-  | Record<'lessThan', E>
-  | Record<'lessOrEqualThan', E>
-  | Record<'greaterThan', E>
-  | Record<'greaterOrEqualThan', E>
-  | Record<'between', [E, E]>;
-
-type NullExpression = Record<'exist', true> | Record<'notExist', true>;
-
-type StringExpression = Record<'beginsWith', string>;
-type StringFilterExpression = Record<'contains', string> | Record<'notContains', string>;
-
-type CommonExpression<E> = Record<'notEqual', E> | NullExpression;
-
-type Filter<E> = {
-  [key in keyof E]?: E[key] extends string | number | boolean | Date | null
-    ?
-        | E[key]
-        | (E[key] extends number
-            ? OperationExpression<number> | CommonExpression<number>
-            : E[key] extends boolean
-              ? CommonExpression<boolean>
-              : E[key] extends null
-                ? NullExpression
-                : StringExpression | StringFilterExpression | CommonExpression<string>)
-    : DeepPartial<Filter<E[key]>>;
-};
-
-type OrFilter<E> = {
-  OR: Array<Filter<E> | AndFilter<E>>;
-};
-
-type AndFilter<E> = {
-  AND: Filter<E> | OrFilter<E>;
-};
-
-type SortDirectionType = 'asc' | 'desc';
-
-type KeyCondition<E> = {
-  partition: Partial<OnlyNumberString<E>>;
-  sort?: {
-    [key in keyof E as E[key] extends number | string ? key : never]?:
-      | E[key]
-      | (E[key] extends number
-          ? OperationExpression<E[key]>
-          : OperationExpression<E[key]> | StringExpression);
-  };
-};
-
-export type Item<E extends Function> = {
-  [key in keyof E['prototype']]: E['prototype'][key];
-};
-
-export type Cursor<E extends Function> = Partial<E>;
-
-type Projection<E extends Function> = KeyOfClass<E>[] | 'ALL';
-
-interface FindProps<E extends Function> {
-  projection?: Projection<E>;
-  filter?: Filter<E['prototype']> | OrFilter<E['prototype']>;
-  sortDirection?: SortDirectionType;
-  cursor?: Cursor<E['prototype']>;
-  limit?: number;
-}
-
-interface QueryProps<E extends Function> extends FindProps<E> {
-  keyCondition: KeyCondition<E['prototype']>;
-}
-
-interface QueryOneProps<E extends Function> extends Omit<QueryProps<E>, 'limit'> {}
-
-export interface Expression {
-  expression: string[];
-  nameResolver: Record<string, string>;
-  valueResolver: Record<string, any>;
-}
-
-export interface ConditionExpression extends Omit<Expression, 'expression'> {
-  expression: string;
-}
-
-export interface ExecQueryProps<E extends Function> {
-  condition?: string;
-  index?: DynamoIndex<E>;
-  filter?: string;
-  names?: Record<string, string>;
-  values?: Record<string, any>;
-  limit?: number;
-  cursor?: Cursor<E['prototype']>;
-  sort?: SortDirectionType;
-  projection?: Projection<E>;
-}
-
-export interface QueryResponse<E extends Function> {
-  data: Partial<E['prototype']>[];
-  cursor?: Cursor<E['prototype']>;
-}
-
-export interface UpdateProps<E extends Function> {
-  keyCondition: Partial<Item<E>>;
-  values: Partial<Item<E>>;
-}
+import type {
+  AndFilter,
+  ExecQueryProps,
+  Expression,
+  Filter,
+  FilterExpression,
+  FindProps,
+  Item,
+  KeyCondition,
+  ModelMetadata,
+  NullExpression,
+  OrFilter,
+  QueryOneProps,
+  QueryProps,
+  QueryResponse,
+  UpdateProps,
+  UpsertProps,
+} from './repository.types';
+import { type DynamoIndex, type FieldsMetadata, ModelMetadataKeys } from '../model';
+import type { ClassResource, OnlyNumberString } from '@really-less/common';
 
 const expressionResolver = <V>(key: string, value: V, sign: string) => {
   return `${key} ${sign} :${value}`;
@@ -152,10 +59,10 @@ const filterResolver = {
     return `contains(:${value}, ${key})`;
   },
   exist: (key: string) => {
-    return `exist(:${key})`;
+    return `attribute_exists(:${key})`;
   },
   notExist: (key: string) => {
-    return `notExist(${key})`;
+    return `attribute_not_exists(${key})`;
   },
   notEqual: (key: string, value: string) => {
     return expressionResolver(key, value, '<>');
@@ -181,7 +88,7 @@ const getConfig = () => {
 
 export let client = new DynamoDBClient(getConfig());
 
-export const createRepository = <E extends { new (...args: any[]): {} }>(model: E) => {
+export const getModelInformation = <E extends ClassResource>(model: E) => {
   const modelProps: ModelMetadata<E> = Reflect.getMetadata(
     ModelMetadataKeys.MODEL,
     model
@@ -195,6 +102,22 @@ export const createRepository = <E extends { new (...args: any[]): {} }>(model: 
     ModelMetadataKeys.SORT_KEY,
     model.prototype
   );
+
+  const fields: FieldsMetadata = Reflect.getMetadata(
+    ModelMetadataKeys.FIELDS,
+    model.prototype
+  );
+
+  return {
+    modelProps,
+    partitionKey,
+    sortKey,
+    fields,
+  };
+};
+
+export const createRepository = <E extends ClassResource>(model: E) => {
+  const { modelProps, partitionKey, sortKey } = getModelInformation(model);
 
   if (modelProps.tracing) {
     client = captureAWSv3Client(client);
@@ -262,11 +185,11 @@ export const createRepository = <E extends { new (...args: any[]): {} }>(model: 
     }
   };
 
-  const getConditionExpression = (expression: KeyCondition<E>) => {
+  const getQueryExpression = (expression: KeyCondition<E>) => {
     const { partition, sort } = expression;
     const partitionName = Object.keys(partition)[0];
 
-    const filterExpression: ConditionExpression = {
+    const filterExpression: FilterExpression = {
       expression: `#${partitionName} = :${partitionName}`,
       nameResolver: {
         [`#${partitionName}`]: partitionName,
@@ -542,7 +465,7 @@ export const createRepository = <E extends { new (...args: any[]): {} }>(model: 
 
     findAll(props: QueryProps<E>) {
       const index = getIndex(props);
-      const queryExpressions = getConditionExpression(props.keyCondition);
+      const queryExpressions = getQueryExpression(props.keyCondition);
       let filterExpression: string | undefined = undefined;
       if (props.filter) {
         validateIndex(props, index);
@@ -593,15 +516,46 @@ export const createRepository = <E extends { new (...args: any[]): {} }>(model: 
       return execQuery(queryOptions);
     }
 
-    async create(item: Item<E>) {
+    async upsert(item: Item<E>, options: UpsertProps<E> = {}) {
+      const { condition } = options;
+      let conditionExpression: string | undefined;
+      let expressionAttributeNames: Record<string, string> | undefined;
+      let expressionAttributeValues: Record<string, any> | undefined;
+
+      if (condition) {
+        const { expression, nameResolver, valueResolver } =
+          getFilterExpression(condition);
+        conditionExpression = expression;
+        expressionAttributeNames = nameResolver;
+        expressionAttributeValues = valueResolver;
+      }
+
       const command = new PutItemCommand({
         TableName: modelProps.name,
         Item: marshall(item),
+        ConditionExpression: conditionExpression,
+        ExpressionAttributeNames: expressionAttributeNames,
+        ExpressionAttributeValues: expressionAttributeValues,
       });
 
       await client.send(command);
 
       return item;
+    }
+
+    async create(item: Item<E>) {
+      const notExist: NullExpression = {
+        notExist: true,
+      };
+
+      const filter = {
+        [partitionKey]: notExist,
+        ...(sortKey ? { [sortKey]: notExist } : {}),
+      } as Filter<E>;
+
+      return this.upsert(item, {
+        condition: filter,
+      });
     }
 
     async update(props: UpdateProps<E>) {

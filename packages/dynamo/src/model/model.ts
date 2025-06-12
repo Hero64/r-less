@@ -1,23 +1,8 @@
-import 'reflect-metadata';
-import type { OnlyNumberString } from 'types/utils';
-
-export enum ModelMetadataKeys {
-  MODEL = 'dynamo:model',
-  PARTITION_KEY = 'dynamo:partition_key',
-  SORT_KEY = 'dynamo:sort_key',
-}
-
-export interface DynamoIndex<T extends Function> {
-  name: string;
-  partitionKey: keyof OnlyNumberString<T['prototype']>;
-  sortKey?: keyof OnlyNumberString<T['prototype']>;
-}
-
-export interface DynamoModelProps<T extends Function> {
-  name?: string;
-  indexes?: DynamoIndex<T>[];
-  tracing?: boolean;
-}
+import {
+  type FieldsMetadata,
+  ModelMetadataKeys,
+  type DynamoModelProps,
+} from './model.types';
 
 export const DynamoModel =
   <T extends Function>(props: DynamoModelProps<T>) =>
@@ -34,10 +19,30 @@ export const DynamoModel =
     );
   };
 
+export const Field = (constructor: any, name: string) => {
+  const fields: FieldsMetadata[] =
+    Reflect.getMetadata(ModelMetadataKeys.FIELDS, constructor) || {};
+  const type = Reflect.getMetadata('design:type', constructor, name).name;
+
+  Reflect.defineMetadata(
+    ModelMetadataKeys.FIELDS,
+    {
+      ...fields,
+      [name]: {
+        name,
+        type,
+      },
+    },
+    constructor
+  );
+};
+
 export const PartitionKey = (constructor: any, name: string) => {
+  Field(constructor, name);
   Reflect.defineMetadata(ModelMetadataKeys.PARTITION_KEY, name, constructor);
 };
 
 export const SortKey = (constructor: any, name: string) => {
+  Field(constructor, name);
   Reflect.defineMetadata(ModelMetadataKeys.SORT_KEY, name, constructor);
 };
